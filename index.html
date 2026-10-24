@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DocuBus</title>
+<meta name="description" content="Documents vierges et délivrance exceptionnelle de TSO au Bus 31/32.">
+<meta name="theme-color" content="#0d2a5e">
+<meta name="robots" content="noindex">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DocuBus">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="css/commun.css">
+<style>
+/* ---------- Documents ---------- */
+.search{position:relative}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--muted)}
+.search input{padding-left:40px}
+details.cat{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--c,var(--navy));border-radius:14px;overflow:hidden}
+details.cat summary{list-style:none;padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
+details.cat summary::-webkit-details-marker{display:none}
+details.cat summary .name{flex:1;font-weight:700;font-size:17px;color:var(--navy)}
+details.cat summary .count{font-family:var(--f-num);font-size:13px;min-width:26px;text-align:center;padding:2px 8px;border-radius:99px;background:var(--field);color:var(--muted);border:1px solid var(--line)}
+details.cat summary .chev{width:18px;height:18px;color:var(--muted);transition:transform .15s}
+details.cat[open] summary .chev{transform:rotate(90deg)}
+.docs{border-top:1px solid var(--line)}
+.doc{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 14px;border-bottom:1px solid var(--line)}
+.doc:last-child{border-bottom:0}
+.doc .ico{width:34px;height:40px;flex:0 0 auto;border-radius:6px;display:grid;place-items:center;font-family:var(--f-num);font-size:10px;font-weight:700;color:#fff;background:var(--grey)}
+.doc .ico.pdf{background:#c2410c}.doc .ico.doc{background:var(--blue)}.doc .ico.xls{background:#178a47}.doc .ico.img{background:var(--orange);color:#2a1700}
+.doc .t{flex:1;min-width:0}
+.doc .t a{display:block;font-weight:700;color:var(--ink);text-decoration:none;overflow-wrap:anywhere}
+.doc .t small{color:var(--muted);font-size:12px}
+.doc .act{display:flex;gap:4px;flex:0 0 auto}
+.iconbtn{width:42px;height:42px;border:1px solid var(--line);background:var(--field);border-radius:10px;display:grid;place-items:center;color:var(--navy);text-decoration:none;padding:0}
+.iconbtn svg{width:20px;height:20px}
+.doc.gen{background:color-mix(in srgb,var(--orange) 10%,#fff)}
+.doc.gen .ico{background:var(--orange);color:#2a1700}
+.empty{padding:12px 14px;color:var(--muted);font-size:14px}
+
+/* ---------- Délivrance ---------- */
+.dates{display:grid;gap:8px}
+.daterow{display:grid;grid-template-columns:1fr 112px 42px;gap:8px;align-items:end}
+.daterow .wd{font-size:12px;color:var(--muted);min-height:16px}
+.dose{position:relative}
+.dose input{padding-right:36px}
+.dose em{position:absolute;right:10px;bottom:13px;font-style:normal;font-size:14px;color:var(--muted);pointer-events:none}
+.patient{--g:var(--blue)}
+.patient h3 .n{font-family:var(--f-brand);font-weight:400;font-size:16px;background:var(--navy);color:#fff;border-radius:6px;padding:2px 9px 1px;transform:rotate(-3deg)}
+.errors{margin:0;padding:10px 12px 10px 30px;background:var(--warn-bg);color:var(--warn);border-radius:10px;font-size:14px;display:grid;gap:3px}
+.privacy{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted)}
+.privacy svg{width:20px;height:20px;flex:0 0 auto;color:var(--ok);margin-top:1px}
+.stickyfoot{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:4;display:grid;gap:8px}
+.stickyfoot .primary{box-shadow:0 10px 24px -10px var(--navy)}
+
+/* ---------- Fenêtre d'envoi ---------- */
+.dialog.send{max-width:480px}
+.step{display:grid;gap:10px;border:1px solid var(--line);border-radius:14px;padding:12px}
+.step .sh{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--navy)}
+.step .num{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:14px;flex:0 0 auto}
+.step.done .num{background:var(--ok)}
+.addr{font-family:var(--f-num);font-size:14px;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:8px 10px;overflow-wrap:anywhere;color:var(--ink)}
+.files{display:grid;gap:6px}
+.files a{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--navy);text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+.files a svg{width:18px;height:18px;color:#c2410c;flex:0 0 auto}
+.files a span{flex:1;min-width:0;overflow-wrap:anywhere}
+.files a small{color:var(--blue);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <img src="img/logo.svg" alt="Logo DocuBus : le bus 31/32 chargé de classeurs" width="76" height="76">
+    <div class="txt">
+      <h1 class="wordmark">Docu<span class="bus">Bus</span></h1>
+      <div class="row2">
+        <p class="tagline"><b>Documents du Bus 31/32</b></p>
+        <div class="row" style="gap:6px">
+          <button class="pillbtn" id="install" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Installer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <header class="bar">
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="docs" aria-selected="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Documents
+      </button>
+      <button role="tab" data-tab="deliv" aria-selected="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v4l-4 8a4 4 0 0 0 3.6 6h4.8a4 4 0 0 0 3.6-6l-4-8V3"/><path d="M7.5 14h9"/></svg>Délivrance
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel" id="p-docs"></section>
+    <section class="panel" id="p-deliv" hidden></section>
+  </main>
+
+  <footer>
+    <div class="brush" aria-hidden="true"></div>
+    <span>DocuBus · Bus 31/32 · Marseille</span>
+    <div class="links">
+      <button id="howto-link">Installer l'appli sur son téléphone</button>
+      <a href="admin.html" id="admin-link">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        Accès admin</a>
+    </div>
+  </footer>
+</div>
+
+<div class="overlay" id="modal" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title" id="modal-box"></div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="lib/jspdf.umd.min.js"></script>
+<script>
+(function(){
+'use strict';
+/* ======================================================================
+   DocuBus — appli de l'équipe.
+   CONFIDENTIALITÉ : le formulaire de délivrance vit uniquement en mémoire.
+   Rien n'est écrit dans le téléphone (pas de localStorage, pas de cookie,
+   pas d'historique). Fermer ou recharger la page efface tout.
+   Les listes (documents, destinataires) sont lues dans config/*.json,
+   modifiables par les admins depuis admin.html.
+   ====================================================================== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ICON={
+  open:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13"/><path d="m7 8 5-5 5 5"/><path d="M5 12v8h14v-8"/></svg>',
+  chev:'<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>',
+  mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  file:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/></svg>',
+  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>'
+};
+const CAT_COLORS=['var(--navy)','var(--blue)','var(--orange)','var(--grey)','#178a47','#8a3ffc','#0f8b8d'];
+const GEN_CAT='delivrance-exceptionnelle';
+
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2600); }
+async function getJSON(path){ const r=await fetch(path,{cache:'no-cache'}); if(!r.ok) throw new Error(r.status); return r.json(); }
+
+/* ---------- Fenêtres ---------- */
+let lastFocus=null, onModalClose=null;
+function openModal(html,cls,onClose){
+  lastFocus=document.activeElement; onModalClose=onClose||null;
+  const box=$('#modal-box'); box.className='dialog'+(cls?' '+cls:''); box.innerHTML=html;
+  $('#modal').hidden=false; document.body.style.overflow='hidden';
+  const f=box.querySelector('[data-autofocus]')||box.querySelector('button'); f&&f.focus();
+}
+function closeModal(){
+  if($('#modal').hidden) return;
+  $('#modal').hidden=true; document.body.style.overflow=''; $('#modal-box').innerHTML='';
+  const cb=onModalClose; onModalClose=null; cb&&cb();
+  lastFocus&&lastFocus.focus&&lastFocus.focus();
+}
+$('#modal').addEventListener('click',e=>{ if(e.target.id==='modal'||e.target.closest('[data-close]')) closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+/* ---------- Onglets ---------- */
+let tab = location.hash==='#delivrance' ? 'deliv' : 'docs';
+function setTab(t){
+  tab=t;
+  document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
+  $('#p-docs').hidden = t!=='docs'; $('#p-deliv').hidden = t!=='deliv';
+  history.replaceState(null,'',t==='deliv'?'#delivrance':'#documents');
+}
+document.querySelector('.tabs').addEventListener('click',e=>{ const b=e.target.closest('[role=tab]'); if(b){ setTab(b.dataset.tab); window.scrollTo({top:0}); } });
+
+/* ======================================================================
+   1. DOCUMENTS VIERGES
+   ====================================================================== */
+let catalog=null, catalogErr=false, query='';
+const openCats=new Set();
+function kind(f){ const x=(f.split('.').pop()||'').toLowerCase();
+  if(x==='pdf') return ['pdf','PDF']; if(['doc','docx','odt','rtf'].includes(x)) return ['doc',x.toUpperCase().slice(0,4)];
+  if(['xls','xlsx','ods','csv'].includes(x)) return ['xls',x.toUpperCase().slice(0,4)]; if(['jpg','jpeg','png','webp'].includes(x)) return ['img','IMG'];
+  return ['',x.toUpperCase().slice(0,4)]; }
+function frDate(iso){ if(!iso) return ''; const [y,m,d]=iso.slice(0,10).split('-'); return `${d}/${m}/${y}`; }
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const canShareFiles = !!(navigator.canShare && (()=>{ try{ return navigator.canShare({files:[new File(['x'],'t.pdf',{type:'application/pdf'})]}); }catch(e){ return false; } })());
+
+function renderDocs(){
+  const p=$('#p-docs');
+  if(!catalog){
+    p.innerHTML = catalogErr
+      ? `<div class="notice">Impossible de charger la liste des documents. Vérifiez la connexion puis <button class="ghost" id="reload-docs">réessayez</button>.</div>`
+      : `<p class="hint">Chargement des documents…</p>`;
+    return;
+  }
+  const q=norm(query);
+  const cats=catalog.categories||[];
+  const docs=(catalog.documents||[]);
+  const parts=cats.map((c,i)=>{
+    let list=docs.filter(d=>d.categorie===c.id);
+    if(q) list=list.filter(d=>norm(d.titre).includes(q)||norm(c.nom).includes(q));
+    list.sort((a,b)=>a.titre.localeCompare(b.titre,'fr'));
+    const gen = c.id===GEN_CAT && (!q || norm('remplir attestation delivrance exceptionnelle').includes(q));
+    if(q && !list.length && !gen) return '';
+    const open = q || openCats.has(c.id);
+    const rows = list.map(d=>{ const [k,lab]=kind(d.fichier); const href=d.fichier+(d.v?'?v='+d.v:'');
+      return `<div class="doc"><div class="ico ${k}">${esc(lab)}</div>
+        <div class="t"><a href="${esc(href)}" target="_blank" rel="noopener">${esc(d.titre)}</a><small>${d.maj?'Mis à jour le '+frDate(d.maj):''}</small></div>
+        <div class="act">
+          ${canShareFiles?`<button class="iconbtn" data-share="${esc(d.id)}" aria-label="Partager ${esc(d.titre)}" title="Partager">${ICON.share}</button>`:''}
+          <a class="iconbtn" href="${esc(href)}" target="_blank" rel="noopener" aria-label="Ouvrir ${esc(d.titre)}" title="Ouvrir">${ICON.open}</a>
+        </div></div>`; }).join('');
+    const genRow = gen ? `<div class="doc gen"><div class="ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg></div><div class="t"><a href="#delivrance" data-goto="deliv">Remplir une attestation en ligne</a><small>Formulaire puis envoi par mail au CSAPA de suivi</small></div><div class="act"><button class="iconbtn" data-goto="deliv" aria-label="Remplir une attestation">${ICON.open}</button></div></div>` : '';
+    const count=list.length;
+    return `<details class="cat" data-cat="${esc(c.id)}" style="--c:${CAT_COLORS[i%CAT_COLORS.length]}" ${open?'open':''}>
+      <summary><span class="name">${esc(c.nom)}</span><span class="count">${count}</span>${ICON.chev}</summary>
+      <div class="docs">${genRow}${rows || (genRow?'':`<div class="empty">Aucun document pour l'instant.</div>`)}</div></details>`;
+  }).join('');
+  p.innerHTML = `
+    <div class="search">${ICON.search}<input class="in" id="q" type="search" placeholder="Rechercher un document" value="${esc(query)}" autocomplete="off" aria-label="Rechercher un document"></div>
+    ${parts || `<p class="hint">Aucun document ne correspond à « ${esc(query)} ».</p>`}`;
+}
+$('#p-docs').addEventListener('input',e=>{ if(e.target.id==='q'){ query=e.target.value; const pos=e.target.selectionStart; renderDocs(); const q=$('#q'); q.focus(); try{q.setSelectionRange(pos,pos);}catch(_){} } });
+$('#p-docs').addEventListener('toggle',e=>{ const d=e.target.closest&&e.target.closest('details.cat'); if(!d||query) return; d.open?openCats.add(d.dataset.cat):openCats.delete(d.dataset.cat); },true);
+$('#p-docs').addEventListener('click',async e=>{
+  if(e.target.closest('#reload-docs')){ loadCatalog(); return; }
+  const g=e.target.closest('[data-goto]'); if(g){ e.preventDefault(); setTab(g.dataset.goto); window.scrollTo({top:0}); return; }
+  const s=e.target.closest('[data-share]'); if(!s) return;
+  const d=catalog.documents.find(x=>x.id===s.dataset.share); if(!d) return;
+  try{
+    s.disabled=true;
+    const r=await fetch(d.fichier+(d.v?'?v='+d.v:'')); if(!r.ok) throw new Error();
+    const blob=await r.blob(); const name=d.fichier.split('/').pop();
+    await navigator.share({files:[new File([blob],name,{type:blob.type||'application/pdf'})], title:d.titre});
+  }catch(err){ if(err&&err.name!=='AbortError') toast('Partage impossible. Ouvrez le document puis partagez-le.'); }
+  finally{ s.disabled=false; }
+});
+async function loadCatalog(){
+  catalogErr=false; renderDocs();
+  try{ catalog=await getJSON('config/documents.json'); }catch(e){ catalogErr=true; }
+  renderDocs();
+}
+
+/* ======================================================================
+   2. DÉLIVRANCE EXCEPTIONNELLE
+   ====================================================================== */
+let lists=[], structure=null, logoData=null;
+const pad=n=>String(n).padStart(2,'0');
+function isoToday(){ const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function isoAdd(iso,days){ const [y,m,d]=iso.split('-').map(Number); const t=new Date(y,m-1,d+days); return `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`; }
+function isoDate(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); }
+function weekday(iso){ return iso ? isoDate(iso).toLocaleDateString('fr-FR',{weekday:'long'}) : ''; }
+let uid=0;
+function newDate(prev){ return { id:++uid, d: prev&&prev.d ? isoAdd(prev.d,1) : isoToday(), mg: prev ? prev.mg : '' }; }
+function newPatient(){ return { id:++uid, civ:'', ini:'', ddn:'', dossier:'', trt:'', forme:'', dates:[newDate()] }; }
+function blank(){ return { date:isoToday(), csapa:'', libreNom:'', libreMail:'', attention:'', patients:[newPatient()] }; }
+let F=blank(), showErrors=false, files=[], urls=[];
+
+const FORMES={ metha:['Sirop','Gélules'], bupre:['Comprimé sublingual','Lyophilisat oral (Orobupré)'] };
+const TRT_NAME={ metha:'Méthadone', bupre:'Buprénorphine' };
+
+function dest(){
+  if(F.csapa==='libre') return { structure:F.libreNom.trim(), adresses:splitMails(F.libreMail) };
+  const l=lists[+F.csapa]; return l ? { structure:l.structure||l.nom, adresses:l.adresses||[] } : null;
+}
+function splitMails(s){ return String(s||'').split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean); }
+const MAIL=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function parseDose(v){ const n=parseFloat(String(v).replace(',','.')); return isFinite(n)?n:NaN; }
+function fmtDose(v){ const n=parseDose(v); return (Math.round(n*100)/100).toString().replace('.',','); }
+function parseDDN(s){
+  const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s||''); if(!m) return null;
+  const d=+m[1], mo=+m[2], y=+m[3]; const t=new Date(y,mo-1,d);
+  if(t.getFullYear()!==y||t.getMonth()!==mo-1||t.getDate()!==d) return null;
+  if(y<1900||t>new Date()) return null; return t;
+}
+
+function validate(){
+  const errs=[], bad=new Set();
+  if(!F.date){ errs.push('Date du document manquante.'); bad.add('date'); }
+  if(F.csapa===''){ errs.push('Choisissez le CSAPA de suivi.'); bad.add('csapa'); }
+  if(F.csapa==='libre'){
+    if(!F.libreNom.trim()){ errs.push('Indiquez le nom de la structure.'); bad.add('libreNom'); }
+    const m=splitMails(F.libreMail);
+    if(!m.length||m.some(x=>!MAIL.test(x))){ errs.push('Adresse mail du destinataire manquante ou incorrecte.'); bad.add('libreMail'); }
+  }
+  F.patients.forEach((p,i)=>{
+    const P=`Patient ${i+1} : `;
+    if(!p.civ){ errs.push(P+'choisissez M. ou Mme.'); bad.add(p.id+'civ'); }
+    if(!p.ini.trim()){ errs.push(P+'initiales manquantes.'); bad.add(p.id+'ini'); }
+    if(!parseDDN(p.ddn)){ errs.push(P+'date de naissance incorrecte (JJ/MM/AAAA).'); bad.add(p.id+'ddn'); }
+    if(!p.trt){ errs.push(P+'choisissez le traitement.'); bad.add(p.id+'trt'); }
+    const seen=new Set();
+    p.dates.forEach((d,j)=>{
+      if(!d.d){ errs.push(P+`date de délivrance n° ${j+1} manquante.`); bad.add(d.id+'d'); }
+      else if(seen.has(d.d)){ errs.push(P+`la date du ${frDate(d.d)} est en double.`); bad.add(d.id+'d'); }
+      seen.add(d.d);
+      const n=parseDose(d.mg);
+      if(!(n>0)||n>1000){ errs.push(P+`dose manquante pour le ${d.d?frDate(d.d):'n° '+(j+1)}.`); bad.add(d.id+'mg'); }
+    });
+  });
+  return {errs,bad};
+}
+
+function renderDeliv(){
+  const p=$('#p-deliv');
+  const {errs,bad}=showErrors?validate():{errs:[],bad:new Set()};
+  const B=k=>bad.has(k)?' bad':'';
+  const opts=lists.map((l,i)=>`<option value="${i}" ${String(i)===F.csapa?'selected':''}>${esc(l.nom)}</option>`).join('');
+  const d=F.csapa!=='' ? dest() : null;
+  const patients=F.patients.map((pt,i)=>{
+    const formes=pt.trt?FORMES[pt.trt]:[];
+    const dates=pt.dates.map((x,j)=>`
+      <div class="daterow" data-p="${pt.id}" data-d="${x.id}">
+        <label class="field"><span>Date ${j+1} <small class="wd">${esc(weekday(x.d))}</small></span>
+          <input class="in${B(x.id+'d')}" type="date" data-k="d" value="${esc(x.d)}" autocomplete="off"></label>
+        <label class="field dose"><span>Dose / jour</span>
+          <input class="in num${B(x.id+'mg')}" data-k="mg" inputmode="decimal" placeholder="—" value="${esc(x.mg)}" autocomplete="off"><em>mg</em></label>
+        <button class="iconbtn" data-act="deldate" ${pt.dates.length<2?'disabled':''} aria-label="Retirer cette date" title="Retirer cette date">${ICON.trash}</button>
+      </div>`).join('');
+    return `<div class="card top patient" data-p="${pt.id}">
+      <h3><span class="row" style="gap:8px"><span class="n">Patient ${i+1}</span></span>
+        ${F.patients.length>1?`<button class="ghost red" data-act="delpat">${ICON.trash}Retirer</button>`:''}</h3>
+      <div class="grid2">
+        <div class="field"><span>Civilité</span>
+          <div class="seg${bad.has(pt.id+'civ')?' bad':''}" role="group" aria-label="Civilité">
+            <button type="button" data-civ="M." aria-pressed="${pt.civ==='M.'}">M.</button>
+            <button type="button" data-civ="Mme" aria-pressed="${pt.civ==='Mme'}">Mme</button></div></div>
+        <label class="field"><span>Initiales</span>
+          <input class="in${B(pt.id+'ini')}" data-k="ini" value="${esc(pt.ini)}" placeholder="ex. J.D." maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false"></label>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>Né(e) le</span>
+          <input class="in num${B(pt.id+'ddn')}" data-k="ddn" value="${esc(pt.ddn)}" placeholder="JJ/MM/AAAA" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+        <label class="field"><span>N° de dossier <small>(facultatif)</small></span>
+          <input class="in" data-k="dossier" value="${esc(pt.dossier)}" placeholder="—" maxlength="20" autocomplete="off" spellcheck="false"></label>
+      </div>
+      <div class="field"><span>Traitement</span>
+        <div class="seg ${pt.trt==='metha'?'metha':''}${bad.has(pt.id+'trt')?' bad':''}" role="group" aria-label="Traitement">
+          <button type="button" data-trt="metha" aria-pressed="${pt.trt==='metha'}">Méthadone</button>
+          <button type="button" data-trt="bupre" aria-pressed="${pt.trt==='bupre'}">Buprénorphine</button></div></div>
+      ${pt.trt?`<label class="field"><span>Forme <small>(facultatif)</small></span>
+        <select class="in" data-k="forme"><option value="">Non précisée</option>${formes.map(f=>`<option ${pt.forme===f?'selected':''}>${esc(f)}</option>`).join('')}</select></label>`:''}
+      <div class="field"><span>Dates de délivrance</span></div>
+      <div class="dates">${dates}</div>
+      <div><button class="secondary" data-act="adddate">${ICON.plus}Ajouter une date</button></div>
+    </div>`;
+  }).join('');
+
+  p.innerHTML=`
+    <h2 class="sec"><span class="pill" style="--g:var(--orange);--on-g:#2a1700">TSO</span>Délivrance exceptionnelle</h2>
+    <div class="privacy">${ICON.shield}<span>Rien n'est enregistré sur le téléphone. Le formulaire s'efface après l'envoi, ou si vous fermez la page.</span></div>
+
+    <div class="card top" style="--g:var(--navy)">
+      <h3>Destinataire</h3>
+      <label class="field"><span>CSAPA de suivi</span>
+        <select class="in${B('csapa')}" data-k="csapa">
+          <option value="" ${F.csapa===''?'selected':''} disabled>Choisir…</option>${opts}
+          <option value="libre" ${F.csapa==='libre'?'selected':''}>Autre (adresse libre)</option>
+        </select></label>
+      ${F.csapa==='libre'?`
+        <label class="field"><span>Nom de la structure</span><input class="in${B('libreNom')}" data-k="libreNom" value="${esc(F.libreNom)}" placeholder="ex. CSAPA …" autocomplete="off"></label>
+        <label class="field"><span>Adresse(s) mail</span><input class="in${B('libreMail')}" data-k="libreMail" type="email" multiple value="${esc(F.libreMail)}" placeholder="nom@exemple.fr" autocomplete="off" autocapitalize="off" spellcheck="false"></label>`
+      : d ? `<div class="addr">${d.adresses.map(esc).join('<br>')||'Aucune adresse'}</div>`:''}
+      <label class="field"><span>À l'attention de <small>(facultatif)</small></span>
+        <input class="in" data-k="attention" value="${esc(F.attention)}" placeholder="ex. Dr …" autocomplete="off"></label>
+      <label class="field"><span>Date du document</span>
+        <input class="in${B('date')}" type="date" data-k="date" value="${esc(F.date)}"></label>
+    </div>
+
+    ${patients}
+
+    <button class="secondary" data-act="addpat">${ICON.plus}Ajouter un patient</button>
+
+    ${errs.length?`<ul class="errors" role="alert">${errs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+
+    <div class="stickyfoot">
+      <button class="primary big orange" data-act="prepare">${ICON.mail}Préparer l'envoi (${F.patients.length} PDF)</button>
+    </div>
+    <div class="row end"><button class="ghost red" data-act="clear">${ICON.trash}Tout effacer</button></div>`;
+}
+
+/* Saisie : on met à jour les données sans tout redessiner (le clavier reste ouvert) */
+function findP(el){ const c=el.closest('[data-p]'); return c&&F.patients.find(x=>x.id===+c.dataset.p); }
+function clearStaleErrors(el){
+  // Dès qu'on corrige, on retire les messages : ils seront recalculés au prochain « Préparer l'envoi »
+  if(!showErrors) return;
+  showErrors=false; const ul=$('#p-deliv .errors'); ul&&ul.remove();
+  el.classList&&el.classList.remove('bad'); const sg=el.closest&&el.closest('.seg'); sg&&sg.classList.remove('bad');
+}
+$('#p-deliv').addEventListener('input',e=>{
+  const el=e.target, k=el.dataset.k; if(!k) return;
+  clearStaleErrors(el);
+  const row=el.closest('.daterow');
+  if(row){ const pt=findP(row), dd=pt.dates.find(x=>x.id===+row.dataset.d); dd[k]=el.value;
+    if(k==='d'){ const w=row.querySelector('.wd'); if(w) w.textContent=weekday(el.value); }
+    if(k==='mg') el.value=el.value.replace(/[^\d.,]/g,'');
+    dd[k]=el.value; return; }
+  const pt=findP(el);
+  if(pt){
+    if(k==='ini'){ const v=el.value.toUpperCase().replace(/[^A-ZÀ-Ÿ.\- ]/g,''); if(v!==el.value) el.value=v; }
+    if(k==='ddn'){ const digits=el.value.replace(/\D/g,'').slice(0,8); let v=digits;
+      if(digits.length>4) v=digits.slice(0,2)+'/'+digits.slice(2,4)+'/'+digits.slice(4);
+      else if(digits.length>2) v=digits.slice(0,2)+'/'+digits.slice(2);
+      if(v!==el.value) el.value=v; }
+    pt[k]=el.value; return;
+  }
+  F[k]=el.value;
+  if(k==='csapa'){ const l=lists[+el.value]; F.attention = (l&&l.attention)||''; renderDeliv(); }
+});
+$('#p-deliv').addEventListener('change',e=>{ if(e.target.dataset.k==='forme'){ const pt=findP(e.target); pt.forme=e.target.value; } });
+$('#p-deliv').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const pt=findP(b);
+  if(b.dataset.civ){ pt.civ=b.dataset.civ; renderDeliv(); return; }
+  if(b.dataset.trt){ if(pt.trt!==b.dataset.trt){ pt.trt=b.dataset.trt; pt.forme=''; } renderDeliv(); return; }
+  const a=b.dataset.act;
+  if(a==='adddate'){ pt.dates.push(newDate(pt.dates[pt.dates.length-1])); renderDeliv();
+    const rows=document.querySelectorAll(`.daterow[data-p="${pt.id}"]`); const last=rows[rows.length-1]; last&&last.querySelector('[data-k=mg]').focus(); }
+  if(a==='deldate'){ const row=b.closest('.daterow'); pt.dates=pt.dates.filter(x=>x.id!==+row.dataset.d); renderDeliv(); }
+  if(a==='addpat'){ const np=newPatient(); const prev=F.patients[F.patients.length-1]; np.dates=[{...newDate(),d:prev.dates[0].d}]; F.patients.push(np); renderDeliv();
+    const c=document.querySelector(`.patient[data-p="${np.id}"]`); c&&c.scrollIntoView({behavior:'smooth',block:'start'}); }
+  if(a==='delpat'){ askConfirm('Retirer ce patient ?','Ses informations seront effacées.','Retirer',()=>{ F.patients=F.patients.filter(x=>x!==pt); renderDeliv(); }); }
+  if(a==='clear'){ askConfirm('Tout effacer ?','Le formulaire sera vidé.','Tout effacer',()=>{ clearAll(); toast('Formulaire effacé'); }); }
+  if(a==='prepare') prepare();
+});
+function askConfirm(title,text,yes,fn){
+  openModal(`<h3 id="modal-title">${esc(title)}</h3><p>${esc(text)}</p>
+    <div class="btns"><button class="danger" id="cf-yes">${esc(yes)}</button><button class="secondary" data-close data-autofocus>Annuler</button></div>`);
+  $('#cf-yes').onclick=()=>{ closeModal(); fn(); };
+}
+function revoke(){ urls.forEach(u=>URL.revokeObjectURL(u)); urls=[]; files=[]; }
+function clearAll(){ revoke(); F=blank(); showErrors=false; renderDeliv(); window.scrollTo({top:0}); }
+
+/* ---------- PDF ---------- */
+async function loadLogo(){
+  if(logoData) return logoData;
+  const r=await fetch('img/logo-association.jpg'); const b=await r.blob();
+  logoData=await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(b); });
+  return logoData;
+}
+const S=()=>structure||{nom:'Bus 31/32',signataire:'Équipe médicale Bus3132',ville:'Marseille',entete:[],pied:[]};
+
+function makePdf(pt,logo){
+  const { jsPDF } = window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const st=S(), D=dest();
+  const NAVY=[13,42,94], ORANGE=[238,138,18], GREY=[93,103,121], INK=[20,32,58];
+  doc.setProperties({title:'Attestation de délivrance exceptionnelle', subject:'Délivrance exceptionnelle de TSO', author:st.nom, creator:'DocuBus'});
+  const L=20, R=190, W=R-L;
+
+  // En-tête : logo + adresse
+  doc.addImage(logo,'JPEG',L+2,14,30,28.2);
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...INK);
+  (st.entete||[]).forEach((t,i)=>{ doc.setFont('helvetica', i===0?'bolditalic':'bold'); doc.text(t, L+17, 47+i*4, {align:'center'}); });
+
+  doc.setTextColor(...GREY); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('CONFIDENTIEL – DONNÉES DE SANTÉ', R, 16, {align:'right'});
+  doc.setTextColor(...NAVY); doc.setFontSize(16);
+  doc.text('Attestation de', R, 30, {align:'right'});
+  doc.text('délivrance exceptionnelle', R, 37.5, {align:'right'});
+  doc.setDrawColor(...ORANGE); doc.setLineWidth(1.2); doc.line(R-62, 41.5, R, 41.5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(...GREY);
+  doc.text('Traitement de substitution aux opiacés', R, 47, {align:'right'});
+
+  // Lieu, date, destinataire
+  let y=72;
+  doc.setTextColor(...INK); doc.setFontSize(11.5); doc.setFont('helvetica','normal');
+  doc.text(`${st.ville||'Marseille'}, le ${frDate(F.date)}`, L, y); y+=12;
+  doc.setFont('helvetica','bold'); doc.text("À l'attention de :", L, y);
+  doc.setFont('helvetica','normal');
+  const att=[D.structure, F.attention.trim()].filter(Boolean);
+  att.forEach((t,i)=>{ doc.text(doc.splitTextToSize(t, W-36), L+36, y+i*6); }); y+=Math.max(1,att.length)*6+8;
+
+  // Texte
+  const fem=pt.civ==='Mme';
+  const who=`${pt.civ} ${pt.ini.trim()}`+(pt.dossier.trim()?` (n° de dossier : ${pt.dossier.trim()})`:'');
+  const body=`Nous, ${st.signataire}, attestons que ${who}, né${fem?'e':''} le ${pt.ddn}, a bénéficié à titre exceptionnel, dans notre structure, de la délivrance de son traitement aux dates suivantes :`;
+  const lines=doc.splitTextToSize(body, W);
+  doc.text(lines, L, y, {lineHeightFactor:1.45}); y+=lines.length*11.5*0.3528*1.45+6;
+
+  // Tableau
+  const trt=TRT_NAME[pt.trt]+(pt.forme?` (${pt.forme.toLowerCase()})`:'');
+  const cols=[L, L+62, R-34]; const rowH=9;
+  doc.setFillColor(...NAVY); doc.rect(L, y, W, rowH, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text('Date', cols[0]+3, y+6); doc.text('Traitement', cols[1]+3, y+6); doc.text('Dose du jour', R-3, y+6, {align:'right'});
+  y+=rowH;
+  const sorted=[...pt.dates].sort((a,b)=>a.d.localeCompare(b.d));
+  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(...INK);
+  sorted.forEach((x,i)=>{
+    if(i%2===0){ doc.setFillColor(243,245,249); doc.rect(L, y, W, rowH, 'F'); }
+    const wd=weekday(x.d); doc.text(`${wd.charAt(0).toUpperCase()+wd.slice(1)} ${frDate(x.d)}`, cols[0]+3, y+6);
+    doc.text(doc.splitTextToSize(trt, cols[2]-cols[1]-4)[0], cols[1]+3, y+6);
+    doc.setFont('helvetica','bold'); doc.text(`${fmtDose(x.mg)} mg`, R-3, y+6, {align:'right'}); doc.setFont('helvetica','normal');
+    y+=rowH;
+  });
+  doc.setDrawColor(...NAVY); doc.setLineWidth(.3); doc.rect(L, y-rowH*(sorted.length+1), W, rowH*(sorted.length+1));
+  y+=10;
+
+  doc.setFontSize(11.5);
+  doc.text("N'hésitez pas à nous contacter pour toute information complémentaire.", L, y); y+=16;
+  doc.setFont('helvetica','bold'); doc.setTextColor(...NAVY);
+  doc.text(st.signataire, R, y, {align:'right'});
+
+  // Pied de page
+  const pied=st.pied||[]; let fy=297-12-(pied.length-1)*4;
+  doc.setDrawColor(...ORANGE); doc.setLineWidth(.6); doc.line(L+40, fy-6, R-40, fy-6);
+  doc.setFontSize(8); doc.setTextColor(...GREY);
+  pied.forEach((t,i)=>{ doc.setFont('helvetica', i===0?'bold':'normal'); doc.text(t, 105, fy+i*4, {align:'center'}); });
+  return doc.output('blob');
+}
+
+function subject(){ return `${S().nom} – Délivrance exceptionnelle – ${frDate(F.date)}`; }
+function mailBody(n){
+  const D=dest();
+  return `Bonjour,\n\nVeuillez trouver ci-joint ${n>1?`${n} attestations`:'une attestation'} de délivrance exceptionnelle de traitement de substitution, pour ${n>1?'des patients suivis':'un patient suivi'} par ${D.structure}.\n\nN'hésitez pas à nous contacter pour toute information complémentaire.\n\nCordialement,\n${S().signataire}`;
+}
+
+async function prepare(){
+  showErrors=true;
+  const {errs}=validate();
+  if(errs.length){ renderDeliv(); const el=$('.errors'); el&&el.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  showErrors=false; renderDeliv();
+  if(!window.jspdf){ toast('Le module PDF n\'est pas chargé. Vérifiez la connexion.'); return; }
+  revoke();
+  try{
+    const logo=await loadLogo();
+    const day=F.date, N=F.patients.length;
+    files=F.patients.map((pt,i)=>new File([makePdf(pt,logo)], `Delivrance-exceptionnelle_${day}${N>1?`_${i+1}-sur-${N}`:''}.pdf`, {type:'application/pdf'}));
+    urls=files.map(f=>URL.createObjectURL(f));
+  }catch(e){ console.error(e); toast('Erreur pendant la création du PDF.'); return; }
+  showSend();
+}
+
+function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText) return navigator.clipboard.writeText(t).then(()=>true,()=>fallbackCopy(t));
+  return Promise.resolve(fallbackCopy(t));
+}
+function fallbackCopy(t){ const a=document.createElement('textarea'); a.value=t; a.setAttribute('readonly',''); a.style.position='fixed'; a.style.opacity='0'; document.body.appendChild(a); a.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(e){} a.remove(); return ok; }
+
+function showSend(){
+  const D=dest(), N=files.length, addrs=D.adresses.join('; ');
+  const share=canShareFiles && navigator.canShare({files});
+  const list=files.map((f,i)=>`<a href="${urls[i]}" target="_blank" rel="noopener">${ICON.file}<span>${esc(f.name)}</span><small>Aperçu</small></a>`).join('');
+  openModal(`
+    <h3 id="modal-title">Envoyer ${N>1?`les ${N} attestations`:"l'attestation"}</h3>
+    <p>À <b>${esc(D.structure)}</b></p>
+    <div class="files">${list}</div>
+    <div class="step" id="st1">
+      <div class="sh"><span class="num">1</span>${share?'Partager vers Outlook':'Télécharger les PDF et ouvrir le mail'}</div>
+      ${share
+        ? `<p>Les adresses du CSAPA sont copiées en même temps. Choisissez <b>Outlook</b>, puis dans le champ <b>À</b> : appui long → <b>Coller</b>.</p>
+           <button class="primary orange" id="do-share">${ICON.share}Partager ${N>1?`les ${N} PDF`:'le PDF'}</button>`
+        : `<div class="notice">Ce navigateur ne permet pas de partager un fichier : les PDF vont dans le dossier Téléchargements. <b>Pensez à les supprimer après l'envoi.</b></div>
+           <button class="primary orange" id="do-dl">${ICON.file}Télécharger ${N>1?`les ${N} PDF`:'le PDF'}</button>
+           <a class="secondary" id="do-mailto" href="mailto:${D.adresses.map(encodeURIComponent).join(',')}?subject=${encodeURIComponent(subject())}&body=${encodeURIComponent(mailBody(N))}">${ICON.mail}Ouvrir le mail (joindre les PDF à la main)</a>`}
+    </div>
+    <div class="step">
+      <div class="sh">${ICON.copy.replace('<svg','<svg width="20" height="20"')}Adresses et objet, si besoin</div>
+      <div class="addr">${D.adresses.map(esc).join('<br>')}</div>
+      <div class="row"><button class="secondary" id="cp-addr">Copier les adresses</button><button class="secondary" id="cp-subj">Copier l'objet</button></div>
+    </div>
+    <div class="step" id="st2">
+      <div class="sh"><span class="num">2</span>Une fois le mail envoyé</div>
+      <button class="primary" id="done">Mail envoyé : effacer le formulaire</button>
+    </div>
+    <button class="ghost" data-close>Revenir au formulaire sans effacer</button>`,'send',()=>{ /* fermeture : on garde le formulaire */ });
+
+  const box=$('#modal-box');
+  box.querySelector('#cp-addr').onclick=()=>copyText(addrs).then(ok=>toast(ok?'Adresses copiées':'Copie impossible'));
+  box.querySelector('#cp-subj').onclick=()=>copyText(subject()).then(ok=>toast(ok?'Objet copié':'Copie impossible'));
+  box.querySelector('#done').onclick=()=>{ closeModal(); clearAll(); toast('Formulaire effacé'); };
+  const sh=box.querySelector('#do-share');
+  if(sh) sh.onclick=async()=>{
+    copyText(addrs);                          // lancé dans le même geste que le partage
+    try{
+      await navigator.share({ files, title:subject(), text:mailBody(N) });
+      box.querySelector('#st1').classList.add('done');
+      toast('Adresses copiées : collez-les dans « À »');
+      box.querySelector('#done').focus();
+    }catch(err){ if(err&&err.name!=='AbortError') toast('Partage impossible : '+(err.message||err.name)); }
+  };
+  const dl=box.querySelector('#do-dl');
+  if(dl) dl.onclick=()=>{ files.forEach((f,i)=>{ const a=document.createElement('a'); a.href=urls[i]; a.download=f.name; document.body.appendChild(a); a.click(); a.remove(); }); box.querySelector('#st1').classList.add('done'); };
+}
+
+/* ======================================================================
+   3. INSTALLATION SUR LE TÉLÉPHONE (comme « Le compte est bus »)
+   ====================================================================== */
+const ua=navigator.userAgent||'';
+const isIOS=/iphone|ipad|ipod/i.test(ua) || (/macintosh/i.test(ua) && navigator.maxTouchPoints>1);
+const isAndroid=/android/i.test(ua);
+const standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredPrompt=e; });
+window.addEventListener('appinstalled',()=>{ deferredPrompt=null; $('#install').hidden=true; closeModal(); toast('Appli installée sur l\'écran d\'accueil'); });
+if(!standalone&&(isIOS||isAndroid)) $('#install').hidden=false;
+const shareKey='<span class="key">'+ICON.share+'</span>';
+const dotsKey='<span class="key"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></span>';
+function showHowto(){
+  const ios=`<div class="os${isIOS?' mine':''}"><h4>iPhone / iPad${isIOS?' <span class="you">votre téléphone</span>':''}</h4><ol>
+    <li>Ouvrez le lien de l'appli dans <b>Safari</b>.</li><li>Touchez le bouton <b>Partager</b> ${shareKey} en bas de l'écran.</li>
+    <li>Faites défiler et choisissez <b>Sur l'écran d'accueil</b>.</li><li>Touchez <b>Ajouter</b> en haut à droite.</li></ol></div>`;
+  const android=`<div class="os${isAndroid?' mine':''}"><h4>Android${isAndroid?' <span class="you">votre téléphone</span>':''}</h4><ol>
+    <li>Ouvrez le lien de l'appli dans <b>Chrome</b>.</li><li>Touchez le menu ${dotsKey} en haut à droite.</li>
+    <li>Choisissez <b>Installer l'application</b> (ou <b>Ajouter à l'écran d'accueil</b>).</li><li>Confirmez avec <b>Installer</b>.</li></ol></div>`;
+  openModal(`<h3 id="modal-title">Installer l'appli sur son téléphone</h3>
+    <div class="howto">${deferredPrompt?'<button class="primary" id="do-install">Installer maintenant</button>':''}${isAndroid?android+ios:ios+android}
+    <p class="hint">L'icône du bus apparaît sur l'écran d'accueil. Les documents déjà ouverts restent consultables sans réseau.</p></div>
+    <button class="secondary" data-close data-autofocus>Fermer</button>`);
+  const b=$('#do-install'); if(b) b.onclick=async()=>{ deferredPrompt.prompt(); try{ await deferredPrompt.userChoice; }catch(e){} deferredPrompt=null; closeModal(); };
+}
+$('#install').addEventListener('click',showHowto);
+$('#howto-link').addEventListener('click',showHowto);
+
+/* ---------- Démarrage ---------- */
+setTab(tab);
+renderDeliv();
+loadCatalog();
+Promise.all([getJSON('config/listes.json').catch(()=>null), getJSON('config/structure.json').catch(()=>null)])
+  .then(([l,s])=>{ if(Array.isArray(l)) lists=l; if(s) structure=s; renderDeliv(); });
+if('serviceWorker' in navigator && location.protocol==='https:'){ try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){} }
+})();
+</script>
+</body>
+</html>

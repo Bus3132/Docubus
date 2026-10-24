@@ -1,0 +1,12 @@
+{
+  "nom": "Bus 31/32",
+  "signataire": "Équipe médicale Bus3132",
+  "ville": "Marseille",
+  "entete": ["Association loi 1901", "129, avenue de Toulon", "13005 MARSEILLE"],
+  "pied": [
+    "Association loi 1901",
+    "129 avenue de Toulon – 13005 MARSEILLE",
+    "Tél. : 04 86 11 09 14 – Email : bus3132@bus3132.org",
+    "SIRET 490 478 062 00014 – APE 8899B"
+  ]
+}
