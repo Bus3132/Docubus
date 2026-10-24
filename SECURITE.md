@@ -4,63 +4,62 @@ Note destinée à la direction et au DPO du Bus 31/32.
 
 ## Ce que fait l'appli, en une phrase
 
-Elle fabrique une attestation PDF **dans le téléphone**, puis la passe à **Outlook**, qui l'envoie. L'appli elle-même n'envoie rien à personne.
+Réservée à l'équipe, elle donne accès aux documents vierges de l'association. Elle fabrique aussi une attestation PDF **dans le téléphone**, puis la passe à **Outlook**, qui l'envoie. L'appli elle-même n'envoie aucune donnée patient à personne.
+
+## Où sont les choses
+
+| Quoi | Où | Qui y a accès |
+|---|---|---|
+| Code de l'appli (la « coquille ») | GitHub, public | Tout le monde : il ne contient aucune donnée |
+| Documents vierges, liste des CSAPA, textes des attestations | Base Supabase de l'annuaire (Europe) | Membres de l'annuaire connectés. Seuls les administrateurs peuvent les modifier |
+| Données patient (initiales, naissance, doses) | Mémoire du téléphone, le temps de la saisie | L'agent qui saisit. Rien n'est enregistré |
+| Attestation envoyée | Outlook (boîtes d'envoi et de réception) | Expéditeur et CSAPA destinataire |
 
 ## Les protections en place
 
-**Pas de serveur, pas de base de données.** L'appli est une simple page web hébergée sur GitHub Pages. Il n'existe aucun endroit où les données des patients pourraient être stockées ou piratées en masse.
+**Accès nominatif.** Chaque agent se connecte avec son adresse e-mail, par un lien ou un code reçu par mail. Ce sont les mêmes comptes que l'annuaire Annubus. Un départ se traite en retirant l'adresse dans Annubus.
 
-**Rien n'est enregistré sur le téléphone.** Le formulaire vit uniquement dans la mémoire de la page : pas de sauvegarde, pas d'historique, pas de saisie semi-automatique. Il est vidé après l'envoi, ou dès qu'on ferme la page.
+**Contrôle fait par la base, pas par l'appli.** Les règles d'accès sont dans la base elle-même. Même quelqu'un qui modifierait le code de l'appli ne pourrait :
+- ni lire les documents sans être membre ;
+- ni les modifier sans être administrateur.
 
-**Le PDF est fabriqué sur place.** La bibliothèque qui crée le PDF est copiée dans l'appli : aucun service extérieur n'est appelé, aucune statistique de visite n'est collectée.
+Ces règles ont été testées.
 
-**Données réduites au minimum.** Initiales, date de naissance, n° de dossier facultatif, traitement, dates et doses. Pas de nom. Le corps du mail, l'objet et le nom des fichiers ne contiennent aucune donnée patient : tout est dans la pièce jointe.
+**Traçabilité.** Chaque modification d'un document, d'un destinataire ou d'un texte enregistre sa date et l'adresse de son auteur. C'est la base qui les remplit, ils ne peuvent pas être falsifiés.
 
-**Partage direct vers Outlook.** Sur téléphone, le PDF est transmis par le bouton Partager, sans passer par le dossier Téléchargements.
+**Documents privés.** Les fichiers sont dans un espace de stockage privé. Les liens d'ouverture sont temporaires (1 heure) et propres à la personne connectée.
 
-**Accès admin protégé.** Les modifications (documents, listes de diffusion) passent par une clé GitHub :
-- limitée au seul dépôt DocuBus ;
-- stockée chiffrée (AES-256, clé dérivée du code admin avec 600 000 itérations de PBKDF2) ;
-- jamais visible en clair.
+**Rien n'est enregistré pour les patients.** Le formulaire vit uniquement dans la mémoire de la page : pas de sauvegarde, pas d'historique, pas de saisie semi-automatique, et aucun envoi à la base. Il est vidé après l'envoi ou à la fermeture de la page.
 
-Chaque modification est historisée par GitHub et peut être annulée.
+**Le PDF est fabriqué sur place.** Aucun service extérieur n'est appelé et aucune statistique de visite n'est collectée.
+
+**Données réduites au minimum.** Initiales, date de naissance, n° de dossier facultatif, traitement, dates et doses. Pas de nom. Rien dans l'objet, le corps du mail ou le nom des fichiers.
 
 ## Les limites et risques résiduels
 
-**1. Le mail lui-même (risque principal).** Outlook n'est pas une messagerie sécurisée de santé (MSSanté). Le mail et sa pièce jointe sont conservés en clair dans la boîte d'envoi du Bus et dans celle du destinataire. L'appli ne peut pas corriger cela. Pistes :
-- activer le chiffrement des mails de Microsoft 365, si la licence le permet ;
+**1. Le mail lui-même (risque principal).** Outlook n'est pas une messagerie sécurisée de santé (MSSanté). Le mail et le PDF restent en clair dans les boîtes d'envoi et de réception. L'appli ne peut pas corriger cela. Pistes :
+- activer le chiffrement Microsoft 365, si la licence le permet ;
 - passer à terme sur MSSanté ;
-- demander une adresse professionnelle au Dr Lutaud, plutôt que son adresse Gmail actuelle (messagerie grand public, non hébergée comme une donnée de santé).
+- demander une adresse professionnelle au Dr Lutaud, plutôt que son adresse Gmail actuelle.
 
-**2. Erreur de destinataire.** La liste préétablie réduit ce risque, mais une mauvaise sélection ou une adresse libre mal tapée reste possible. Le nom du CSAPA est rappelé avant l'envoi.
+**2. Erreur de destinataire.** La liste préétablie réduit le risque. Le nom du CSAPA est rappelé avant l'envoi.
 
-**3. Le téléphone.** Après envoi, le mail reste dans les « Éléments envoyés » d'Outlook. Il faut donc :
-- des téléphones professionnels, verrouillés par un code ;
-- des comptes Outlook personnels à chaque agent ou bien gérés.
+**3. Le téléphone.** Un téléphone connecté donne accès aux documents vierges, et le mail envoyé reste dans Outlook. Il faut des téléphones professionnels verrouillés par un code.
 
-Sur ordinateur, le partage direct n'existe pas : les PDF passent par Téléchargements et doivent être supprimés après l'envoi. L'appli le rappelle.
+**4. Le PDF peut être imité.** Le code de l'appli est public. Quelqu'un de motivé pourrait donc fabriquer un PDF identique, sans accès à la base. Ce risque est faible et existait déjà avec le formulaire papier faxé. La garantie d'authenticité est **l'adresse Outlook de l'expéditeur**. Les CSAPA ne doivent pas se fier à un PDF apporté par un patient ou reçu d'une autre adresse ; en cas de doute, ils appellent le 04 86 11 09 14.
 
-**4. Le site est public.** Toute personne ayant l'adresse voit les documents vierges et les adresses professionnelles des CSAPA. Aucune donnée patient n'y figure. N'y mettre aucun document interne confidentiel.
+**5. Les comptes administrateurs et le compte Supabase.** Un administrateur de l'annuaire peut tout modifier dans DocuBus. Il faut :
+- peu d'administrateurs ;
+- des administrateurs retirés à leur départ ;
+- un compte Supabase au nom de l'association, avec double authentification.
 
-**5. Un code admin partagé.** Les 1 ou 2 admins utilisent le même code. Conséquences :
-- on ne sait pas lequel a fait une modification ;
-- un ancien admin connaît le code tant qu'il n'est pas changé : il faut le **changer à chaque départ**, en 30 secondes dans l'onglet Sécurité ;
-- en cas de départ conflictuel, il faut aussi remplacer la clé GitHub ;
-- un code court pourrait être deviné par force brute, d'où un minimum de 16 caractères.
+**6. La base gratuite.** Elle se met en pause après 7 jours sans activité. La tâche quotidienne d'Annubus l'en empêche ; si elle échoue, GitHub prévient par mail.
 
-**6. Le compte GitHub de l'association.** C'est la pièce maîtresse. Quelqu'un qui en prendrait le contrôle, ou qui aurait à la fois le code admin et le fichier chiffré, pourrait modifier l'appli elle-même : par exemple changer les adresses des CSAPA, ou ajouter du code qui détourne les saisies. Il faut :
-- un compte au nom de l'association, pas sur l'adresse personnelle d'un salarié ;
-- la double authentification activée ;
-- des identifiants rangés par la direction ;
-- vérifier de temps en temps la liste des destinataires.
-
-**7. Pas d'identification de l'utilisateur côté équipe.** N'importe qui peut ouvrir l'appli et produire un PDF à l'en-tête du Bus. La garantie d'authenticité, c'est **l'adresse Outlook de l'expéditeur**, pas le PDF. Les CSAPA destinataires doivent le savoir.
-
-**8. Hébergement par GitHub (Microsoft, États-Unis).** GitHub héberge le code de l'appli et les documents vierges, jamais de données patient.
+**7. Hébergeurs.** GitHub (Microsoft, États-Unis) héberge le code. Supabase (région Europe) héberge les documents vierges et les adresses des CSAPA. Aucun des deux n'héberge de données patient.
 
 ## À faire valider
 
-- Inscription du traitement au **registre RGPD** de l'association, et information des patients.
-- Avis du **DPO** sur l'envoi par Outlook sans chiffrement et sur le cas de l'adresse Gmail.
-- Vérification auprès de l'informaticien : chiffrement Microsoft 365 disponible ou non.
-- Choix des admins, et des personnes qui détiennent le compte GitHub de l'association.
+- Inscription du traitement au **registre RGPD**, et information des patients.
+- Avis du **DPO** sur l'envoi par Outlook et sur l'adresse Gmail.
+- Disponibilité du chiffrement Microsoft 365.
+- Liste des administrateurs, et personnes qui détiennent les comptes GitHub et Supabase de l'association.

@@ -1,16 +1,15 @@
 // DocuBus — permet d'ouvrir l'appli même sans réseau.
 // Toujours la version en ligne d'abord ; la copie en cache sert seulement hors connexion.
-// Les documents vierges déjà ouverts une fois restent consultables hors connexion.
+// Seule la « coquille » de l'appli est gardée ; les documents et les listes restent dans la base.
 // Rien de ce qui est saisi dans le formulaire de délivrance ne passe par ici.
-const CACHE = 'docubus-v1';
+const CACHE = 'docubus-v2';
 const FILES = [
   './',
   './index.html',
   './css/commun.css',
   './manifest.webmanifest',
-  './config/documents.json',
-  './config/listes.json',
-  './config/structure.json',
+  './config.js',
+  './vendor/supabase-js-2.45.4/supabase.js',
   './lib/jspdf.umd.min.js',
   './img/logo.svg',
   './img/logo-app.png',
@@ -43,8 +42,7 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return;     // GitHub (page admin) : jamais mis en cache
-  if (url.pathname.endsWith('/config/cle.json')) return; // la clé chiffrée n'est jamais mise en cache
+  if (url.origin !== self.location.origin) return;     // base Supabase : jamais mise en cache
 
   e.respondWith(
     fetch(req, { cache: 'no-cache' })
