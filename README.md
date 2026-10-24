@@ -47,5 +47,6 @@ La mise en veille de la base gratuite est déjà évitée par la tâche quotidie
 - `config.js` : adresse de la base et clé publique (les mêmes que pour Annubus)
 - `supabase-docubus.sql` : tables, stockage et règles d'accès à installer dans Supabase
 - `SECURITE.md` : note sécurité pour la direction et le DPO
+- `docs/Docubus_guide.docx` : guide des fonctionnalités et du fonctionnement
 - `css/`, `fonts/`, `img/`, `lib/` (jsPDF, MIT), `vendor/` (supabase-js 2.45.4, MIT)
 - `manifest.webmanifest`, `sw.js` : installation sur l'écran d'accueil
