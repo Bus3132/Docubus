@@ -21,105 +21,112 @@
 .auth .card{gap:14px}
 .auth p{margin:0;font-size:15px;color:var(--muted)}
 
-/* ---------- Documents ---------- */
+/* ---------- Documents (organisation : recherche, filtres, récents, catégories) ---------- */
 .search{position:relative}
-.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--muted)}
-.search input{padding-left:40px}
-details.cat{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--c,var(--navy));border-radius:14px;overflow:hidden}
-details.cat summary{list-style:none;padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
-details.cat summary::-webkit-details-marker{display:none}
-details.cat summary .name{flex:1;font-weight:700;font-size:17px;color:var(--navy)}
-details.cat summary .count{font-family:var(--f-num);font-size:13px;min-width:26px;text-align:center;padding:2px 8px;border-radius:99px;background:var(--field);color:var(--muted);border:1px solid var(--line)}
-details.cat summary .chev{width:18px;height:18px;color:var(--muted);transition:transform .15s}
-details.cat[open] summary .chev{transform:rotate(90deg)}
-.docs{border-top:1px solid var(--line)}
-.doc{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 14px;border-bottom:1px solid var(--line)}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--ink)}
+.search input{padding-left:42px;height:52px;border-width:3px;font-weight:700}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px 8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:2.5px solid var(--ink);background:#fff;color:var(--ink);padding:8px 13px;font-weight:700;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--orange);box-shadow:3px 3px 0 #fff}
+.dlist{background:#fff;color:var(--ink);border:var(--bd);box-shadow:var(--shadow)}
+.doc{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:2px dashed var(--ink)}
 .doc:last-child{border-bottom:0}
-.doc .ico{width:34px;height:40px;flex:0 0 auto;border-radius:6px;display:grid;place-items:center;font-family:var(--f-num);font-size:10px;font-weight:700;color:#fff;background:var(--grey)}
-.doc .ico.pdf{background:#c2410c}.doc .ico.doc{background:var(--blue)}.doc .ico.xls{background:#178a47}.doc .ico.img{background:var(--orange);color:#2a1700}
+.doc .ico{width:34px;height:42px;flex:0 0 auto;border:2px solid var(--ink);display:grid;place-items:center;font-family:var(--f-num);font-size:10px;font-weight:700;color:#fff;background:var(--grey)}
+.doc .ico.pdf{background:#c2410c}.doc .ico.doc{background:var(--blue)}.doc .ico.xls{background:#178a47}.doc .ico.img{background:var(--orange);color:var(--ink)}
 .doc .t{flex:1;min-width:0}
 .doc .t a{display:block;font-weight:700;color:var(--ink);text-decoration:none;overflow-wrap:anywhere}
 .doc .t small{color:var(--muted);font-size:12px}
-.doc .act{display:flex;gap:4px;flex:0 0 auto}
-.iconbtn{width:42px;height:42px;border:1px solid var(--line);background:var(--field);border-radius:10px;display:grid;place-items:center;color:var(--navy);text-decoration:none;padding:0}
+.doc .act{display:flex;gap:6px;flex:0 0 auto}
+.iconbtn{width:44px;height:44px;border:2.5px solid var(--ink);background:#fff;display:grid;place-items:center;color:var(--ink);text-decoration:none;padding:0}
 .iconbtn svg{width:20px;height:20px}
-.doc.gen{background:color-mix(in srgb,var(--orange) 10%,#fff)}
-.doc.gen .ico{background:var(--orange);color:#2a1700}
+.doc.gen{background:var(--warn-bg)}
+.doc.gen .ico{background:var(--orange);color:var(--ink)}
 .empty{padding:12px 14px;color:var(--muted);font-size:14px}
+.catlist{display:grid;gap:12px}
+.catrow{display:flex;align-items:center;gap:12px;width:100%;background:#fff;color:var(--ink);border:var(--bd);padding:13px 14px;text-align:left}
+.catrow:nth-child(4n+1){transform:rotate(.6deg)}.catrow:nth-child(4n+2){transform:rotate(-.7deg)}.catrow:nth-child(4n+3){transform:rotate(.35deg)}.catrow:nth-child(4n){transform:rotate(-.45deg)}
+.catrow .name{flex:1;font-family:var(--f-brand);font-size:20px;line-height:1.15}
+.catrow .count{background:var(--ink);color:#fff;font-family:var(--f-num);font-weight:700;font-size:14px;padding:2px 9px}
+.catrow svg{width:20px;height:20px;flex:0 0 auto}
+.dark .ghost,.backlink{color:#fff}
+.backlink{border:0;background:transparent;font-weight:700;font-size:15px;padding:4px 0;display:inline-flex;align-items:center;gap:6px;justify-self:start}
+.backlink svg{width:18px;height:18px}
 
 /* ---------- Délivrance ---------- */
-.dates{display:grid;gap:8px}
-.daterow{display:grid;grid-template-columns:1fr 112px 42px;gap:8px;align-items:end}
-.daterow .wd{font-size:12px;color:var(--muted);min-height:16px}
-.daterow .lettres{grid-column:1/-1;margin-top:-2px;font-size:13px;color:var(--navy);font-style:italic;min-height:0}
+.dates{display:grid;gap:10px}
+.daterow{display:grid;grid-template-columns:1fr 112px 44px;gap:8px;align-items:end}
+.daterow .wd{font-size:12px;color:var(--muted);min-height:16px;text-transform:none;letter-spacing:0;font-weight:400}
+.daterow .lettres{grid-column:1/-1;margin-top:-2px;font-size:13px;color:var(--ink);font-style:italic;min-height:0}
 .daterow .lettres:empty{display:none}
 .dose{position:relative}
 .dose input{padding-right:36px}
-.dose em{position:absolute;right:10px;bottom:13px;font-style:normal;font-size:14px;color:var(--muted);pointer-events:none}
-.patient h3 .n{font-family:var(--f-brand);font-weight:400;font-size:16px;background:var(--navy);color:#fff;border-radius:6px;padding:2px 9px 1px;transform:rotate(-3deg)}
-.errors{margin:0;padding:10px 12px 10px 30px;background:var(--warn-bg);color:var(--warn);border-radius:10px;font-size:14px;display:grid;gap:3px}
-.privacy{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted)}
-.privacy svg{width:20px;height:20px;flex:0 0 auto;color:var(--ok);margin-top:1px}
-.stickyfoot{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:4;display:grid;gap:8px}
-.stickyfoot .primary{box-shadow:0 10px 24px -10px var(--navy)}
-.addr{font-family:var(--f-num);font-size:14px;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:8px 10px;overflow-wrap:anywhere;color:var(--ink)}
+.dose em{position:absolute;right:10px;bottom:14px;font-style:normal;font-size:14px;color:var(--muted);pointer-events:none}
+.patient h3 .n{display:inline-block;transform:rotate(-2deg)}
+.errors{margin:0;padding:10px 12px 10px 30px;background:var(--warn-bg);color:var(--warn);border:3px solid var(--warn);font-size:14px;display:grid;gap:3px}
+.privacy{display:flex;gap:10px;align-items:flex-start;font-size:14px;font-weight:700;color:var(--on-dark-ok)}
+.privacy svg{width:20px;height:20px;flex:0 0 auto;margin-top:1px}
+.stickyfoot{position:sticky;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:4;display:grid;gap:8px}
+.addr{font-family:var(--f-num);font-size:14px;background:var(--field);border:2px solid var(--ink);padding:8px 10px;overflow-wrap:anywhere;color:var(--ink)}
+.dest-chips{display:flex;gap:8px;flex-wrap:wrap}
+.dest-chips .chip[aria-pressed="true"]{box-shadow:3px 3px 0 var(--ink)}
+.dest-chips .chip.other{border-style:dashed}
+.dest-chips.bad .chip{border-color:var(--warn);background:var(--warn-bg)}
 
 /* ---------- Fenêtre d'envoi ---------- */
 .dialog.send{max-width:480px}
-.step{display:grid;gap:10px;border:1px solid var(--line);border-radius:14px;padding:12px}
-.step .sh{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--navy)}
-.step .num{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:14px;flex:0 0 auto}
+.step{display:grid;gap:10px;border:2.5px solid var(--ink);padding:12px}
+.step .sh{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--ink)}
+.step .num{width:28px;height:28px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:14px;flex:0 0 auto}
 .step.done .num{background:var(--ok)}
 .files{display:grid;gap:6px}
-.files a{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--navy);text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+.files a{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);text-decoration:none;border:2px solid var(--ink);padding:8px 10px;background:#fff}
 .files a svg{width:18px;height:18px;color:#c2410c;flex:0 0 auto}
 .files a span{flex:1;min-width:0;overflow-wrap:anywhere}
 .files a small{color:var(--blue);font-weight:700}
 
 /* ---------- Admin ---------- */
-.subtabs{display:flex;gap:6px;flex-wrap:wrap}
-.subtabs button{border:1.5px solid var(--line);background:var(--surface);border-radius:99px;padding:8px 14px;font-weight:700;font-size:14px;color:var(--navy)}
-.subtabs button[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
-.drop{border:2.5px dashed var(--blue);border-radius:14px;background:color-mix(in srgb,var(--blue) 6%,#fff);padding:20px 14px;text-align:center;display:grid;gap:6px;justify-items:center;color:var(--navy);cursor:pointer}
-.drop.over{background:color-mix(in srgb,var(--orange) 16%,#fff);border-color:var(--orange)}
-.drop svg{width:34px;height:34px;color:var(--blue)}
+.subtabs{display:flex;gap:8px;flex-wrap:wrap}
+.subtabs button{border:2.5px solid var(--ink);background:#fff;padding:8px 14px;font-weight:700;font-size:14px;color:var(--ink)}
+.subtabs button[aria-pressed="true"]{background:var(--orange);box-shadow:3px 3px 0 #fff}
+.drop{border:3px dashed var(--ink);background:var(--field);padding:20px 14px;text-align:center;display:grid;gap:6px;justify-items:center;color:var(--ink);cursor:pointer}
+.drop.over{background:var(--warn-bg);border-color:var(--orange)}
+.drop svg{width:34px;height:34px;color:var(--ink)}
 .pending{display:grid;gap:10px}
-.prow{display:grid;grid-template-columns:1fr 180px 42px;gap:8px;align-items:start}
-@media (max-width:560px){ .prow{grid-template-columns:1fr 42px} .prow select{grid-column:1} }
+.prow{display:grid;grid-template-columns:1fr 180px 44px;gap:8px;align-items:start}
+@media (max-width:560px){ .prow{grid-template-columns:1fr 44px} .prow select{grid-column:1} }
 .prow small{display:block;color:var(--muted);font-size:12px;overflow-wrap:anywhere;margin-top:3px}
 .cathead{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .cathead h3{flex:1;min-width:150px}
-.arow{display:grid;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.arow{display:grid;gap:6px;padding:10px 0;border-top:2px dashed var(--ink)}
 .arow .t{font-weight:700;overflow-wrap:anywhere}
+.arow .t a{color:var(--ink)}
 .arow .t small{display:block;font-weight:400;color:var(--muted);font-size:12px}
 .arow .acts{display:flex;gap:6px;flex-wrap:wrap}
-.mini{border:1px solid var(--line);background:var(--field);border-radius:8px;padding:6px 9px;font-size:13px;font-weight:700;color:var(--navy);display:inline-flex;align-items:center;gap:4px;font-family:inherit}
+.mini{border:2px solid var(--ink);background:#fff;padding:6px 9px;font-size:13px;font-weight:700;color:var(--ink);display:inline-flex;align-items:center;gap:4px;font-family:inherit;border-radius:0}
 .mini.red{color:var(--danger)}
 .mini svg{width:15px;height:15px}
 select.mini{padding-right:6px}
-.log{font-family:var(--f-num);font-size:13px;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:3px;max-height:200px;overflow:auto}
+.log{font-family:var(--f-num);font-size:13px;background:var(--field);border:2px solid var(--ink);padding:10px;display:grid;gap:3px;max-height:200px;overflow:auto}
 .log .ok{color:var(--ok)} .log .ko{color:var(--danger)}
-.who{font-size:12px;color:var(--muted)}
+.who{font-size:12px;color:var(--on-dark-muted)}
+.card .who{color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="brand">
-    <img src="img/logo-app.png" alt="Logo Docubus : le bus chargé de documents" width="76" height="76">
-    <div class="txt">
-      <h1 class="wordmark">Docu<span class="bus">bus</span></h1>
-      <div class="row2">
-        <p class="tagline"><b>Documents du Bus 31/32</b></p>
-        <button class="pillbtn" id="install" hidden>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Installer
-        </button>
-      </div>
-    </div>
+    <span class="logo"><img src="img/logo-app.png" alt="Logo Docubus : le bus chargé de documents" width="52" height="52"></span>
+    <h1 class="wordmark">Docu<span class="bus">bus</span></h1>
+    <button class="pillbtn" id="install" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Installer
+    </button>
+    <button class="avatar" id="account" hidden aria-label="Mon compte"></button>
   </div>
 
   <!-- Connexion : même principe et mêmes comptes que l'annuaire Annubus -->
   <section class="auth" id="auth" hidden>
-    <div class="card top">
+    <div class="card">
       <h3>Accès réservé à l'équipe</h3>
       <p>Entrez votre adresse e-mail professionnelle : vous recevrez un e-mail de connexion. Ce sont les mêmes accès que pour l'annuaire Annubus.</p>
       <form id="authForm" class="field" style="gap:10px">
@@ -136,19 +143,6 @@ select.mini{padding-right:6px}
   </section>
 
   <div id="appwrap" hidden>
-    <header class="bar">
-      <div class="tabs" role="tablist">
-        <button role="tab" data-tab="docs" aria-selected="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Documents
-        </button>
-        <button role="tab" data-tab="deliv" aria-selected="false">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v4l-4 8a4 4 0 0 0 3.6 6h4.8a4 4 0 0 0 3.6-6l-4-8V3"/><path d="M7.5 14h9"/></svg>Délivrance
-        </button>
-        <button role="tab" data-tab="admin" aria-selected="false" hidden>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Admin
-        </button>
-      </div>
-    </header>
     <main>
       <section class="panel" id="p-docs"></section>
       <section class="panel" id="p-deliv" hidden></section>
@@ -158,7 +152,7 @@ select.mini{padding-right:6px}
 
   <footer>
     <div class="brush" aria-hidden="true"></div>
-    <span>DocuBus · Bus 31/32 · Marseille</span>
+    <span>Docubus · Bus 31/32 · Marseille</span>
     <span class="who" id="who" hidden></span>
     <div class="links">
       <button id="howto-link">Installer l'appli sur son téléphone</button>
@@ -166,6 +160,12 @@ select.mini{padding-right:6px}
     </div>
   </footer>
 </div>
+
+<nav class="bottom" id="nav" role="tablist" aria-label="Navigation principale" hidden>
+  <button role="tab" data-tab="docs" aria-selected="true"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>Documents</button>
+  <button role="tab" data-tab="deliv" aria-selected="false"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v4l-4 8a4 4 0 0 0 3.6 6h4.8a4 4 0 0 0 3.6-6l-4-8V3"/><path d="M7.5 14h9"/></svg></span>Délivrance</button>
+  <button role="tab" data-tab="admin" aria-selected="false" hidden><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>Admin</button>
+</nav>
 
 <div class="overlay" id="modal" hidden>
   <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title" id="modal-box"></div>
@@ -253,6 +253,7 @@ function askText(title,label,value,fn){
 let sb=null, me=null, isAdmin=false;
 function showAuth(msg,kind){
   $('#appwrap').hidden=true; $('#auth').hidden=false; $('#who').hidden=true; $('#logout').hidden=true;
+  $('#nav').hidden=true; $('#account').hidden=true; document.body.classList.remove('has-nav');
   const m=$('#authMsg');
   if(msg){ m.hidden=false; m.className='notice'+(kind==='ok'?' ok':''); m.textContent=msg; } else m.hidden=true;
 }
@@ -275,9 +276,17 @@ $('#codeForm').addEventListener('submit',async e=>{
   if(error) showAuth('Code incorrect ou expiré. Redemandez un e-mail.','err');
 });
 $('#authBack').addEventListener('click',()=>{ $('#codeForm').hidden=true; $('#authForm').hidden=false; $('#authMsg').hidden=true; });
-$('#logout').addEventListener('click',()=>askConfirm('Se déconnecter ?','Il faudra recevoir un nouvel e-mail pour revenir dans DocuBus sur cet appareil.','Se déconnecter',async()=>{
+function askLogout(){ askConfirm('Se déconnecter ?','Il faudra recevoir un nouvel e-mail pour revenir dans Docubus sur cet appareil.','Se déconnecter',async()=>{
   clearAll(); await sb.auth.signOut(); location.reload();
-},false));
+},false); }
+$('#logout').addEventListener('click',askLogout);
+$('#account').addEventListener('click',()=>{
+  openModal(`<h3 id="modal-title">Mon compte</h3><p>Connecté avec <b>${esc(me)}</b>${isAdmin?' · administrateur':''}.</p>
+    <div class="btns"><button class="secondary" id="acc-install">Installer l'appli sur ce téléphone</button>
+    <button class="danger" id="acc-logout">Se déconnecter</button><button class="secondary" data-close>Fermer</button></div>`);
+  $('#acc-install').onclick=()=>{ closeModal(); showHowto(); };
+  $('#acc-logout').onclick=()=>{ closeModal(); askLogout(); };
+});
 
 let started=false;
 async function startApp(session){
@@ -295,6 +304,9 @@ async function startApp(session){
   $('#auth').hidden=true; $('#appwrap').hidden=false;
   $('#who').hidden=false; $('#who').textContent='Connecté : '+email+(isAdmin?' · administrateur':'');
   $('#logout').hidden=false;
+  $('#nav').hidden=false; document.body.classList.add('has-nav');
+  const ini=email.split('@')[0].split(/[._-]+/).filter(Boolean).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
+  $('#account').textContent=ini; $('#account').hidden=false;
   document.querySelector('[data-tab=admin]').hidden=!isAdmin;
   setTab(tab==='admin'&&!isAdmin?'docs':tab);
   renderDeliv();
@@ -307,12 +319,12 @@ async function startApp(session){
 let tab = location.hash==='#delivrance' ? 'deliv' : location.hash==='#admin' ? 'admin' : 'docs';
 function setTab(t){
   tab=t;
-  document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
+  document.querySelectorAll('#nav [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
   $('#p-docs').hidden=t!=='docs'; $('#p-deliv').hidden=t!=='deliv'; $('#p-admin').hidden=t!=='admin';
   history.replaceState(null,'',{deliv:'#delivrance',admin:'#admin',docs:'#documents'}[t]);
   if(t==='admin') renderAdmin();
 }
-document.querySelector('.tabs').addEventListener('click',e=>{ const b=e.target.closest('[role=tab]'); if(b){ setTab(b.dataset.tab); window.scrollTo({top:0}); } });
+document.querySelector('#nav').addEventListener('click',e=>{ const b=e.target.closest('[role=tab]'); if(b){ setTab(b.dataset.tab); window.scrollTo({top:0}); } });
 
 /* ======================================================================
    DONNÉES (lues dans la base, réservées aux membres)
@@ -345,14 +357,25 @@ async function signUrls(){
 /* ======================================================================
    1. DOCUMENTS VIERGES
    ====================================================================== */
-let query='';
-const openCats=new Set();
+let query='', filter='all';
 function kind(f){ const x=(String(f).split('.').pop()||'').toLowerCase();
   if(x==='pdf') return ['pdf','PDF']; if(['doc','docx','odt','rtf'].includes(x)) return ['doc',x.toUpperCase().slice(0,4)];
   if(['xls','xlsx','ods','csv'].includes(x)) return ['xls',x.toUpperCase().slice(0,4)]; if(['jpg','jpeg','png','webp'].includes(x)) return ['img','IMG'];
   return ['',x.toUpperCase().slice(0,4)]; }
 const canShareFiles=!!(navigator.canShare&&(()=>{ try{ return navigator.canShare({files:[new File(['x'],'t.pdf',{type:'application/pdf'})]}); }catch(e){ return false; } })());
 
+const catName=id=>(cats.find(c=>c.id===id)||{}).nom||'';
+const byTitle=(a,b)=>a.titre.localeCompare(b.titre,'fr');
+function docRow(d,showCat){
+  const [k,lab]=kind(d.nom_fichier); const href=signed.get(d.chemin)||'#';
+  return `<div class="doc"><div class="ico ${k}">${esc(lab)}</div>
+    <div class="t"><a href="${esc(href)}" target="_blank" rel="noopener" data-open="${esc(d.id)}">${esc(d.titre)}</a><small>${showCat?esc(catName(d.categorie))+' · ':''}mis à jour le ${frDate(d.maj)}</small></div>
+    <div class="act">
+      ${canShareFiles?`<button class="iconbtn" data-share="${esc(d.id)}" aria-label="Partager ${esc(d.titre)}" title="Partager">${ICON.share}</button>`:''}
+      <a class="iconbtn" href="${esc(href)}" target="_blank" rel="noopener" data-open="${esc(d.id)}" aria-label="Ouvrir ${esc(d.titre)}" title="Ouvrir">${ICON.open}</a>
+    </div></div>`;
+}
+const GEN_ROW=()=>`<div class="doc gen"><div class="ico">${ICON.pen}</div><div class="t"><a href="#delivrance" data-goto="deliv">Remplir une attestation en ligne</a><small>Formulaire puis envoi par mail au CSAPA de suivi</small></div><div class="act"><button class="iconbtn" data-goto="deliv" aria-label="Remplir une attestation">${ICON.open}</button></div></div>`;
 function renderDocs(){
   const p=$('#p-docs');
   if(!loaded){
@@ -360,33 +383,34 @@ function renderDocs(){
     return;
   }
   const qn=norm(query);
-  const parts=cats.map((c,i)=>{
-    let list=docs.filter(d=>d.categorie===c.id);
-    if(qn) list=list.filter(d=>norm(d.titre).includes(qn)||norm(c.nom).includes(qn));
-    list.sort((a,b)=>a.titre.localeCompare(b.titre,'fr'));
-    const gen=c.id===GEN_CAT&&(!qn||norm('remplir attestation delivrance exceptionnelle').includes(qn));
-    if(qn&&!list.length&&!gen) return '';
-    const open=qn||openCats.has(c.id);
-    const rows=list.map(d=>{ const [k,lab]=kind(d.nom_fichier); const href=signed.get(d.chemin)||'#';
-      return `<div class="doc"><div class="ico ${k}">${esc(lab)}</div>
-        <div class="t"><a href="${esc(href)}" target="_blank" rel="noopener" data-open="${esc(d.id)}">${esc(d.titre)}</a><small>Mis à jour le ${frDate(d.maj)}</small></div>
-        <div class="act">
-          ${canShareFiles?`<button class="iconbtn" data-share="${esc(d.id)}" aria-label="Partager ${esc(d.titre)}" title="Partager">${ICON.share}</button>`:''}
-          <a class="iconbtn" href="${esc(href)}" target="_blank" rel="noopener" data-open="${esc(d.id)}" aria-label="Ouvrir ${esc(d.titre)}" title="Ouvrir">${ICON.open}</a>
-        </div></div>`; }).join('');
-    const genRow=gen?`<div class="doc gen"><div class="ico">${ICON.pen}</div><div class="t"><a href="#delivrance" data-goto="deliv">Remplir une attestation en ligne</a><small>Formulaire puis envoi par mail au CSAPA de suivi</small></div><div class="act"><button class="iconbtn" data-goto="deliv" aria-label="Remplir une attestation">${ICON.open}</button></div></div>`:'';
-    return `<details class="cat" data-cat="${esc(c.id)}" style="--c:${CAT_COLORS[i%CAT_COLORS.length]}" ${open?'open':''}>
-      <summary><span class="name">${esc(c.nom)}</span><span class="count">${list.length}</span>${ICON.chev}</summary>
-      <div class="docs">${genRow}${rows||(genRow?'':`<div class="empty">Aucun document pour l'instant.</div>`)}</div></details>`;
-  }).join('');
-  p.innerHTML=`
-    <div class="search">${ICON.search}<input class="in" id="q" type="search" placeholder="Rechercher un document" value="${esc(query)}" autocomplete="off" aria-label="Rechercher un document"></div>
-    ${parts||(qn?`<p class="hint">Aucun document ne correspond à « ${esc(query)} ».</p>`:'<p class="hint">Aucune catégorie.</p>')}`;
+  if(filter!=='all'&&!cats.some(c=>c.id===filter)) filter='all';
+  const chev=svg('<path d="m9 6 6 6-6 6"/>');
+  const chips=`<div class="chips" role="group" aria-label="Filtrer par catégorie">
+    <button class="chip" data-filter="all" aria-pressed="${filter==='all'&&!qn}">Tous</button>
+    ${cats.map(c=>`<button class="chip" data-filter="${esc(c.id)}" aria-pressed="${filter===c.id&&!qn}">${esc(c.nom)}</button>`).join('')}</div>`;
+  let body='';
+  if(qn){
+    const list=docs.filter(d=>norm(d.titre).includes(qn)||norm(catName(d.categorie)).includes(qn)).sort(byTitle);
+    const gen=norm('remplir attestation delivrance exceptionnelle').includes(qn);
+    body=`<div class="lab">Résultats</div>`+(list.length||gen?`<div class="dlist">${gen?GEN_ROW():''}${list.map(d=>docRow(d,true)).join('')}</div>`:`<p class="hint">Aucun document ne correspond à « ${esc(query)} ».</p>`);
+  }else if(filter==='all'){
+    const recent=[...docs].sort((a,b)=>String(b.maj).localeCompare(String(a.maj))).slice(0,3);
+    body=(recent.length?`<div class="lab">Récemment mis à jour</div><div class="dlist">${recent.map(d=>docRow(d,true)).join('')}</div>`:'')
+      +`<div class="lab">Catégories</div>`
+      +(cats.length?`<div class="catlist">${cats.map(c=>`<button class="catrow" data-filter="${esc(c.id)}"><span class="name">${esc(c.nom)}</span><span class="count">${docs.filter(d=>d.categorie===c.id).length}</span>${chev}</button>`).join('')}</div>`:'<p class="hint">Aucune catégorie.</p>');
+  }else{
+    const c=cats.find(x=>x.id===filter), list=docs.filter(d=>d.categorie===c.id).sort(byTitle), gen=c.id===GEN_CAT;
+    body=`<button class="backlink" data-filter="all">${svg('<path d="m15 6-6 6 6 6"/>')}Toutes les catégories</button>
+      <h2 class="sec">${esc(c.nom)}</h2>
+      <div class="dlist">${gen?GEN_ROW():''}${list.map(d=>docRow(d,false)).join('')||(gen?'':`<div class="empty">Aucun document pour l'instant.</div>`)}</div>`;
+  }
+  p.innerHTML=`<div class="search">${ICON.search}<input class="in" id="q" type="search" placeholder="Rechercher un document" value="${esc(query)}" autocomplete="off" aria-label="Rechercher un document"></div>${chips}${body}`;
+  const sel=p.querySelector('.chip[aria-pressed="true"]'); if(sel&&filter!=='all'){ const box=sel.parentNode; box.scrollLeft=sel.offsetLeft-box.clientWidth/2+sel.clientWidth/2; }
 }
 $('#p-docs').addEventListener('input',e=>{ if(e.target.id==='q'){ query=e.target.value; const pos=e.target.selectionStart; renderDocs(); const qi=$('#q'); qi.focus(); try{ qi.setSelectionRange(pos,pos); }catch(_){} } });
-$('#p-docs').addEventListener('toggle',e=>{ const d=e.target.closest&&e.target.closest('details.cat'); if(!d||query) return; d.open?openCats.add(d.dataset.cat):openCats.delete(d.dataset.cat); },true);
 $('#p-docs').addEventListener('click',async e=>{
   if(e.target.closest('#reload-docs')){ loadAll(); return; }
+  const f=e.target.closest('[data-filter]'); if(f){ filter=f.dataset.filter; query=''; renderDocs(); window.scrollTo({top:0}); return; }
   const g=e.target.closest('[data-goto]'); if(g){ e.preventDefault(); setTab(g.dataset.goto); window.scrollTo({top:0}); return; }
   const o=e.target.closest('[data-open]');
   if(o && Date.now()-signedAt>(SIGN_TTL-120)*1000){ e.preventDefault(); toast('Lien expiré, mise à jour…'); await loadAll(true); return; }
@@ -485,7 +509,6 @@ function renderDeliv(){
   const p=$('#p-deliv');
   const {errs,bad}=showErrors?validate():{errs:[],bad:new Set()};
   const B=k=>bad.has(k)?' bad':'';
-  const opts=dests.map(l=>`<option value="${esc(l.id)}" ${l.id===F.csapa?'selected':''}>${esc(l.nom)}</option>`).join('');
   const d=F.csapa!==''?dest():null;
   const patients=F.patients.map((pt,i)=>{
     const formes=pt.trt?FORMES[pt.trt]:[];
@@ -527,15 +550,17 @@ function renderDeliv(){
     </div>`;
   }).join('');
   p.innerHTML=`
-    <h2 class="sec"><span class="pill" style="--g:var(--orange);--on-g:#2a1700">TSO</span>Délivrance exceptionnelle</h2>
+    <h2 class="sec">Délivrance <span class="o">exceptionnelle</span></h2>
     <div class="privacy">${ICON.shield}<span>Rien n'est enregistré, ni sur le téléphone ni dans la base. Le formulaire s'efface après l'envoi, ou si vous fermez la page.</span></div>
     <div class="card top" style="--g:var(--navy)">
-      <h3>Destinataire</h3>
-      <label class="field"><span>CSAPA de suivi</span>
-        <select class="in${B('csapa')}" data-k="csapa">
-          <option value="" ${F.csapa===''?'selected':''} disabled>${dests.length||!loaded?'Choisir…':'Liste indisponible'}</option>${opts}
-          <option value="libre" ${F.csapa==='libre'?'selected':''}>Autre (adresse libre)</option>
-        </select></label>
+      <h3>Pour qui ?</h3>
+      <div class="field"><span>CSAPA de suivi</span>
+        <div class="dest-chips${bad.has('csapa')?' bad':''}" role="group" aria-label="CSAPA de suivi">
+          ${dests.map(l=>`<button type="button" class="chip" data-dest="${esc(l.id)}" aria-pressed="${l.id===F.csapa}">${esc(l.nom)}</button>`).join('')}
+          <button type="button" class="chip other" data-dest="libre" aria-pressed="${F.csapa==='libre'}">Autre…</button>
+        </div>
+        ${!dests.length&&loaded?'<small class="hint">Liste indisponible : utilisez « Autre ».</small>':''}
+        ${bad.has('csapa')?'<small style="color:var(--warn);font-weight:700">Choisissez le CSAPA.</small>':''}</div>
       ${F.csapa==='libre'?`
         <label class="field"><span>Nom de la structure</span><input class="in${B('libreNom')}" data-k="libreNom" value="${esc(F.libreNom)}" placeholder="ex. CSAPA …" autocomplete="off"></label>
         <label class="field"><span>Adresse(s) mail</span><input class="in${B('libreMail')}" data-k="libreMail" type="email" multiple value="${esc(F.libreMail)}" placeholder="nom@exemple.fr" autocomplete="off" autocapitalize="off" spellcheck="false"></label>`
@@ -579,6 +604,7 @@ $('#p-deliv').addEventListener('input',e=>{
 $('#p-deliv').addEventListener('change',e=>{ if(e.target.dataset.k==='forme'){ findP(e.target).forme=e.target.value; } });
 $('#p-deliv').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.dest){ F.csapa=b.dataset.dest; const l=dests.find(x=>x.id===F.csapa); F.attention=(l&&l.attention)||''; showErrors=false; renderDeliv(); return; }
   const pt=findP(b);
   if(b.dataset.civ){ pt.civ=b.dataset.civ; renderDeliv(); return; }
   if(b.dataset.trt){ if(pt.trt!==b.dataset.trt){ pt.trt=b.dataset.trt; pt.forme=''; } renderDeliv(); return; }
@@ -746,7 +772,7 @@ async function act(fn,okMsg){ try{ await fn(); if(okMsg) toast(okMsg); }catch(e)
 function renderAdmin(){
   if(!isAdmin){ $('#p-admin').innerHTML=''; return; }
   $('#p-admin').innerHTML=`
-    <h2 class="sec"><span class="pill">Admin</span>Gestion de DocuBus</h2>
+    <h2 class="sec">Gestion <span class="o">Docubus</span></h2>
     <div class="subtabs" role="group">
       <button data-sub="docs" aria-pressed="${asub==='docs'}">Documents</button>
       <button data-sub="dests" aria-pressed="${asub==='dests'}">Destinataires</button>
@@ -792,7 +818,7 @@ function adminDocs(){
         <div class="row end"><button class="secondary" id="qclear">Vider</button><button class="primary orange" id="qsend">${ICON.up}Déposer ${queue.length} fichier${queue.length>1?'s':''}</button></div>`:''}
       <div id="ulog"></div>
     </div>
-    <div class="row between"><h3 style="margin:0;color:var(--navy)">Catégories</h3><button class="secondary" id="addcat">${ICON.plus}Nouvelle catégorie</button></div>
+    <div class="row between"><div class="lab">Catégories</div><button class="secondary" id="addcat">${ICON.plus}Nouvelle catégorie</button></div>
     ${list||'<p class="hint">Aucune catégorie.</p>'}
   </div>`;
   const drop=$('#drop'),pick=$('#pick');
