@@ -46,7 +46,7 @@ Ces règles ont été testées.
 
 **3. Le téléphone.** Un téléphone connecté donne accès aux documents vierges, et le mail envoyé reste dans Outlook. Il faut des téléphones professionnels verrouillés par un code.
 
-**4. Le PDF peut être imité.** Le code de l'appli est public. Quelqu'un de motivé pourrait donc fabriquer un PDF identique, sans accès à la base. Ce risque est faible et existait déjà avec le formulaire papier faxé. La garantie d'authenticité est **l'adresse Outlook de l'expéditeur**. Les CSAPA ne doivent pas se fier à un PDF apporté par un patient ou reçu d'une autre adresse ; en cas de doute, ils appellent le 04 86 11 09 14.
+**4. Le PDF peut être imité.** Le code de l'appli est public. Le tampon de l'association, stocké dans la base et réservé aux membres, empêche une personne extérieure de produire facilement une attestation complète. Mais chaque CSAPA reçoit ce tampon dans les PDF et pourrait le recopier. Ce risque est faible et existait déjà avec le formulaire papier faxé. La garantie d'authenticité est **l'adresse Outlook de l'expéditeur**. Les CSAPA ne doivent pas se fier à un PDF apporté par un patient ou reçu d'une autre adresse ; en cas de doute, ils appellent le 04 86 11 09 14.
 
 **5. Les comptes administrateurs et le compte Supabase.** Un administrateur de l'annuaire peut tout modifier dans DocuBus. Il faut :
 - peu d'administrateurs ;

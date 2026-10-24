@@ -189,6 +189,7 @@ select.mini{padding-right:6px}
    recharger la page efface tout.
    ====================================================================== */
 const CFG=window.DOCUBUS_CONFIG||{};
+const DESKTOP=!/iphone|ipad|ipod|android/i.test(navigator.userAgent||'')&&!(navigator.maxTouchPoints>1&&/macintosh/i.test(navigator.userAgent||''))&&!(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
 const DEFAULT_ENVOI=['medical@bus3132.org','social@bus3132.org'];
 const BUCKET='docubus', GEN_CAT='delivrance-exceptionnelle', MAX_MB=25, SIGN_TTL=3600;
 const DEFAULT_STRUCT={nom:'Bus 31/32',signataire:'Équipe médicale Bus3132',ville:'Marseille',
@@ -210,6 +211,8 @@ const ICON={
   file:svg('<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/>'),
   shield:svg('<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>'),
   pen:svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/>'),
+  dl:svg('<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>'),
+  print:svg('<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="1"/><path d="M7 14h10v7H7z"/>'),
   up:svg('<path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>'),
   upA:svg('<path d="m6 15 6-6 6 6"/>'), downA:svg('<path d="m6 9 6 6 6-6"/>')
 };
@@ -330,7 +333,7 @@ document.querySelector('#nav').addEventListener('click',e=>{ const b=e.target.cl
 /* ======================================================================
    DONNÉES (lues dans la base, réservées aux membres)
    ====================================================================== */
-let envoi=DEFAULT_ENVOI;
+let envoi=DEFAULT_ENVOI, tampon=null, tamponData=null;
 let cats=[], docs=[], dests=[], structure=DEFAULT_STRUCT, loaded=false, loadErr=false;
 let signed=new Map(), signedAt=0;
 async function q(p){ const {data,error}=await p; if(error) throw error; return data; }
@@ -345,6 +348,7 @@ async function loadAll(quiet){
     cats=c; docs=d; dests=l;
     const reg=k=>((r.find(x=>x.cle===k)||{}).valeur)||null;
     structure={...DEFAULT_STRUCT,...(reg('attestation')||{})};
+    const t=reg('tampon'); if(!t||!tampon||t.chemin!==tampon.chemin) tamponData=null; tampon=t&&t.chemin?t:null;
     envoi=(reg('envoi')&&Array.isArray(reg('envoi').adresses)&&reg('envoi').adresses.length)?reg('envoi').adresses:DEFAULT_ENVOI;
     if(destDraft&&!destDraft.some(x=>x._dirty)) destDraft=null;
     await signUrls();
@@ -369,6 +373,29 @@ function kind(f){ const x=(String(f).split('.').pop()||'').toLowerCase();
   return ['',x.toUpperCase().slice(0,4)]; }
 const canShareFiles=!!(navigator.canShare&&(()=>{ try{ return navigator.canShare({files:[new File(['x'],'t.pdf',{type:'application/pdf'})]}); }catch(e){ return false; } })());
 
+const printable=d=>/\.(pdf|png|jpe?g|webp)$/i.test(d.nom_fichier||'');
+async function fileOf(d){ return q(sb.storage.from(BUCKET).download(d.chemin)); }
+async function downloadDoc(d,btn){
+  try{ btn&&(btn.disabled=true);
+    const blob=await fileOf(d), u=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=u; a.download=d.nom_fichier||'document'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),60000); toast('Téléchargement lancé');
+  }catch(e){ toast('Téléchargement impossible.'); } finally{ btn&&(btn.disabled=false); }
+}
+/* Impression directe (ordinateur) : le fichier est chargé dans un cadre invisible, puis la fenêtre d'impression s'ouvre */
+async function printDoc(d,btn){
+  try{ btn&&(btn.disabled=true); toast('Préparation de l\u2019impression…');
+    const blob=await fileOf(d), u=URL.createObjectURL(blob);
+    const old=document.getElementById('print-frame'); old&&old.remove();
+    const f=document.createElement('iframe'); f.id='print-frame'; f.setAttribute('aria-hidden','true');
+    f.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0';
+    if(/\.pdf$/i.test(d.nom_fichier)) f.src=u;
+    else f.srcdoc=`<html><body style="margin:0"><img src="${u}" style="max-width:100%"></body></html>`;
+    f.onload=()=>setTimeout(()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ window.open(u,'_blank'); } },300);
+    document.body.appendChild(f);
+    setTimeout(()=>URL.revokeObjectURL(u),10*60000);
+  }catch(e){ toast('Impression impossible : ouvrez le document puis imprimez-le.'); } finally{ btn&&(btn.disabled=false); }
+}
 function dateTxt(d){
   const aj=d.ajoute_le||d.maj, a=frDate(aj), m=frDate(d.maj);
   return 'ajouté le '+a+(m&&m!==a?' · mis à jour le '+m:'');
@@ -381,6 +408,8 @@ function docRow(d,showCat){
     <div class="t"><a href="${esc(href)}" target="_blank" rel="noopener" data-open="${esc(d.id)}">${esc(d.titre)}</a><small>${showCat?esc(catName(d.categorie))+' · ':''}${dateTxt(d)}</small></div>
     <div class="act">
       <button class="iconbtn" data-send="${esc(d.id)}" aria-label="Envoyer ${esc(d.titre)} par mail" title="Envoyer par mail">${ICON.mail}</button>
+      <button class="iconbtn" data-dl="${esc(d.id)}" aria-label="Télécharger ${esc(d.titre)}" title="Télécharger">${ICON.dl}</button>
+      ${DESKTOP&&printable(d)?`<button class="iconbtn" data-print="${esc(d.id)}" aria-label="Imprimer ${esc(d.titre)}" title="Imprimer">${ICON.print}</button>`:''}
       <a class="iconbtn" href="${esc(href)}" target="_blank" rel="noopener" data-open="${esc(d.id)}" aria-label="Ouvrir ${esc(d.titre)}" title="Ouvrir">${ICON.open}</a>
     </div></div>`;
 }
@@ -423,6 +452,8 @@ $('#p-docs').addEventListener('click',async e=>{
   const g=e.target.closest('[data-goto]'); if(g){ e.preventDefault(); setTab(g.dataset.goto); window.scrollTo({top:0}); return; }
   const o=e.target.closest('[data-open]');
   if(o && Date.now()-signedAt>(SIGN_TTL-120)*1000){ e.preventDefault(); toast('Lien expiré, mise à jour…'); await loadAll(true); return; }
+  const dl=e.target.closest('[data-dl]'); if(dl){ const d=docs.find(x=>x.id===dl.dataset.dl); d&&downloadDoc(d,dl); return; }
+  const pr=e.target.closest('[data-print]'); if(pr){ const d=docs.find(x=>x.id===pr.dataset.print); d&&printDoc(d,pr); return; }
   const s=e.target.closest('[data-send]'); if(!s) return;
   const d=docs.find(x=>x.id===s.dataset.send); if(d) sendDoc(d);
 });
@@ -445,10 +476,11 @@ function sendDoc(d){
         :`<p>Ce navigateur ne peut pas joindre le fichier : le mail contiendra un lien valable 1 heure.</p>
           <a class="primary orange" id="sd-mailto" href="#">${ICON.mail}Ouvrir le mail</a>`}
     </div>
-    <div class="row"><a class="secondary" href="${esc(href)}" target="_blank" rel="noopener">${ICON.open}Ouvrir le document</a></div>
+    <div class="row"><a class="secondary" href="${esc(href)}" target="_blank" rel="noopener">${ICON.open}Ouvrir</a><button class="secondary" id="sd-dl">${ICON.dl}Télécharger</button></div>
     <button class="ghost" data-close>Fermer</button>`,'send');
   const box=$('#modal-box');
   const current=()=>{ const o=box.querySelector('#sd-other').value.trim(); return o||to; };
+  box.querySelector('#sd-dl').onclick=e=>downloadDoc(d,e.currentTarget);
   box.querySelector('#sd-to').onclick=e=>{ const b=e.target.closest('[data-to]'); if(!b) return; to=b.dataset.to; box.querySelector('#sd-other').value='';
     box.querySelectorAll('#sd-to .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); };
   const mt=box.querySelector('#sd-mailto');
@@ -670,13 +702,23 @@ function revoke(){ urls.forEach(u=>URL.revokeObjectURL(u)); urls=[]; files=[]; }
 function clearAll(){ revoke(); F=blank(); showErrors=false; renderDeliv(); window.scrollTo({top:0}); }
 
 /* ---------- PDF ---------- */
+/* Tampon de l'association : image privée (stockage Supabase, lisible par les seuls membres) */
+async function loadTampon(){
+  if(!tampon) return null;
+  if(tamponData) return tamponData;
+  const blob=await fileOf(tampon);
+  const url=await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(blob); });
+  const dim=await new Promise(res=>{ const im=new Image(); im.onload=()=>res([im.naturalWidth,im.naturalHeight]); im.onerror=()=>res([1,1]); im.src=url; });
+  tamponData={url,fmt:/png/i.test(blob.type||tampon.type||'')?'PNG':'JPEG',w:dim[0],h:dim[1]};
+  return tamponData;
+}
 async function loadLogo(){
   if(logoData) return logoData;
   const b=await (await fetch('img/logo-association.jpg')).blob();
   logoData=await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(b); });
   return logoData;
 }
-function makePdf(pt,logo){
+function makePdf(pt,logo,tp){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   const st=structure, D=dest();
@@ -747,10 +789,12 @@ function makePdf(pt,logo){
     y+=6;
   }
   doc.setFontSize(11.5); doc.setFont('helvetica','normal');
-  room(30);
+  let tw=0,th=0; if(tp){ tw=40; th=tw*tp.h/tp.w; if(th>32){ th=32; tw=th*tp.w/tp.h; } }
+  room(30+(tp?th+4:0));
   doc.text("N'hésitez pas à nous contacter pour toute information complémentaire.",L,y); y+=16;
   doc.setFont('helvetica','bold'); doc.setTextColor(...NAVY);
   doc.text(st.signataire,R,y,{align:'right'});
+  if(tp){ try{ doc.addImage(tp.url,tp.fmt,R-tw,y+3,tw,th); }catch(e){ console.error(e); } }
   const pied=st.pied||[]; const fy=297-12-(pied.length-1)*4;
   for(let pg=1;pg<=doc.getNumberOfPages();pg++){ doc.setPage(pg);
   doc.setDrawColor(...ORANGE); doc.setLineWidth(.6); doc.line(L+40,fy-6,R-40,fy-6);
@@ -773,7 +817,8 @@ async function prepare(){
   revoke();
   try{
     const logo=await loadLogo(), N=F.patients.length;
-    files=F.patients.map((pt,i)=>new File([makePdf(pt,logo)],`Delivrance-exceptionnelle_${F.date}${N>1?`_${i+1}-sur-${N}`:''}.pdf`,{type:'application/pdf'}));
+    let tp=null; try{ tp=await loadTampon(); }catch(e){ toast('Tampon indisponible : attestation sans tampon.'); }
+    files=F.patients.map((pt,i)=>new File([makePdf(pt,logo,tp)],`Delivrance-exceptionnelle_${F.date}${N>1?`_${i+1}-sur-${N}`:''}.pdf`,{type:'application/pdf'}));
     urls=files.map(f=>URL.createObjectURL(f));
   }catch(e){ console.error(e); toast('Erreur pendant la création du PDF.'); return; }
   showSend();
@@ -1048,7 +1093,33 @@ function adminTextes(){
     <label class="field"><span>Adresses proposées <small>(une par ligne · la première est choisie par défaut)</small></span>
       <textarea class="in" id="envoi" rows="3" spellcheck="false" autocapitalize="off">${esc(envoi.join('\n'))}</textarea></label>
     <div class="row end"><button class="primary orange" id="savee">Enregistrer les adresses</button></div>
+  </div>
+  <div class="card top" style="margin-top:16px">
+    <h3>Tampon de l'association</h3>
+    <p class="hint">Image ajoutée sous la signature des attestations (PNG à fond transparent de préférence, 2 Mo max). Elle est stockée dans la base, visible des seuls membres connectés.</p>
+    <div id="tp-preview">${tampon?'<p class="hint">Chargement de l\u2019aperçu…</p>':'<p class="hint">Aucun tampon pour l\u2019instant.</p>'}</div>
+    <div class="row end">
+      ${tampon?'<button class="ghost red" id="tp-del">Retirer le tampon</button>':''}
+      <label class="secondary" style="cursor:pointer">${ICON.up}${tampon?'Remplacer':'Ajouter un tampon'}<input type="file" id="tp-file" accept="image/png,image/jpeg" hidden></label>
+    </div>
   </div>`;
+  if(tampon) loadTampon().then(t=>{ const b=$('#tp-preview'); if(b&&t) b.innerHTML=`<img src="${t.url}" alt="Tampon actuel" style="max-width:160px;max-height:120px;border:2px dashed var(--line);padding:6px">`; }).catch(()=>{ const b=$('#tp-preview'); if(b) b.innerHTML='<p class="hint">Aperçu indisponible.</p>'; });
+  $('#tp-file').onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    if(!/^image\/(png|jpeg)$/.test(f.type)){ toast('Choisissez une image PNG ou JPEG.'); return; }
+    if(f.size>2*1048576){ toast('Image trop lourde (2 Mo max).'); return; }
+    const path=`reglages/tampon-${rid()}.${f.type==='image/png'?'png':'jpg'}`, old=tampon&&tampon.chemin;
+    act(async()=>{
+      await q(sb.storage.from(BUCKET).upload(path,f,{contentType:f.type,upsert:false}));
+      try{ await q(sb.from('docubus_reglages').upsert({cle:'tampon',valeur:{chemin:path,type:f.type}})); }
+      catch(err){ await sb.storage.from(BUCKET).remove([path]); throw err; }
+      if(old) await sb.storage.from(BUCKET).remove([old]);
+    },'Tampon enregistré');
+  };
+  const del=$('#tp-del'); if(del) del.onclick=()=>askConfirm('Retirer le tampon ?','Les prochaines attestations seront sans tampon.','Retirer',()=>{
+    const old=tampon.chemin;
+    act(async()=>{ await q(sb.from('docubus_reglages').delete().eq('cle','tampon')); await sb.storage.from(BUCKET).remove([old]); },'Tampon retiré');
+  });
   $('#savee').onclick=()=>{
     const list=$('#envoi').value.split(/[\s,;]+/).map(x=>x.trim().toLowerCase()).filter(Boolean);
     const bad=list.filter(a=>!MAIL.test(a));
