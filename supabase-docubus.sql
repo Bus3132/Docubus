@@ -29,6 +29,8 @@ create table if not exists public.docubus_documents (
   maj         timestamptz not null default now(),
   maj_par     text
 );
+-- date d'ajout du document (mise à jour du script : sans effet si la colonne existe déjà)
+alter table public.docubus_documents add column if not exists ajoute_le timestamptz not null default now();
 
 create table if not exists public.docubus_destinataires (
   id        uuid primary key default gen_random_uuid(),
@@ -126,6 +128,7 @@ select * from (values
 where not exists (select 1 from public.docubus_destinataires);
 
 insert into public.docubus_reglages (cle, valeur) values
+  ('envoi', jsonb_build_object('adresses', jsonb_build_array('medical@bus3132.org', 'social@bus3132.org'))),
   ('attestation', jsonb_build_object(
     'nom', 'Bus 31/32',
     'signataire', 'Équipe médicale Bus3132',

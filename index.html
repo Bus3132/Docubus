@@ -189,6 +189,7 @@ select.mini{padding-right:6px}
    recharger la page efface tout.
    ====================================================================== */
 const CFG=window.DOCUBUS_CONFIG||{};
+const DEFAULT_ENVOI=['medical@bus3132.org','social@bus3132.org'];
 const BUCKET='docubus', GEN_CAT='delivrance-exceptionnelle', MAX_MB=25, SIGN_TTL=3600;
 const DEFAULT_STRUCT={nom:'Bus 31/32',signataire:'Équipe médicale Bus3132',ville:'Marseille',
   entete:['Association loi 1901','129, avenue de Toulon','13005 MARSEILLE'],
@@ -329,6 +330,7 @@ document.querySelector('#nav').addEventListener('click',e=>{ const b=e.target.cl
 /* ======================================================================
    DONNÉES (lues dans la base, réservées aux membres)
    ====================================================================== */
+let envoi=DEFAULT_ENVOI;
 let cats=[], docs=[], dests=[], structure=DEFAULT_STRUCT, loaded=false, loadErr=false;
 let signed=new Map(), signedAt=0;
 async function q(p){ const {data,error}=await p; if(error) throw error; return data; }
@@ -338,9 +340,12 @@ async function loadAll(quiet){
       q(sb.from('docubus_categories').select('*').order('ordre').order('nom')),
       q(sb.from('docubus_documents').select('*')),
       q(sb.from('docubus_destinataires').select('*').order('ordre').order('nom')),
-      q(sb.from('docubus_reglages').select('*').eq('cle','attestation'))
+      q(sb.from('docubus_reglages').select('*'))
     ]);
-    cats=c; docs=d; dests=l; structure={...DEFAULT_STRUCT,...((r[0]&&r[0].valeur)||{})};
+    cats=c; docs=d; dests=l;
+    const reg=k=>((r.find(x=>x.cle===k)||{}).valeur)||null;
+    structure={...DEFAULT_STRUCT,...(reg('attestation')||{})};
+    envoi=(reg('envoi')&&Array.isArray(reg('envoi').adresses)&&reg('envoi').adresses.length)?reg('envoi').adresses:DEFAULT_ENVOI;
     if(destDraft&&!destDraft.some(x=>x._dirty)) destDraft=null;
     await signUrls();
     loaded=true; loadErr=false;
@@ -364,14 +369,18 @@ function kind(f){ const x=(String(f).split('.').pop()||'').toLowerCase();
   return ['',x.toUpperCase().slice(0,4)]; }
 const canShareFiles=!!(navigator.canShare&&(()=>{ try{ return navigator.canShare({files:[new File(['x'],'t.pdf',{type:'application/pdf'})]}); }catch(e){ return false; } })());
 
+function dateTxt(d){
+  const aj=d.ajoute_le||d.maj, a=frDate(aj), m=frDate(d.maj);
+  return 'ajouté le '+a+(m&&m!==a?' · mis à jour le '+m:'');
+}
 const catName=id=>(cats.find(c=>c.id===id)||{}).nom||'';
 const byTitle=(a,b)=>a.titre.localeCompare(b.titre,'fr');
 function docRow(d,showCat){
   const [k,lab]=kind(d.nom_fichier); const href=signed.get(d.chemin)||'#';
   return `<div class="doc"><div class="ico ${k}">${esc(lab)}</div>
-    <div class="t"><a href="${esc(href)}" target="_blank" rel="noopener" data-open="${esc(d.id)}">${esc(d.titre)}</a><small>${showCat?esc(catName(d.categorie))+' · ':''}mis à jour le ${frDate(d.maj)}</small></div>
+    <div class="t"><a href="${esc(href)}" target="_blank" rel="noopener" data-open="${esc(d.id)}">${esc(d.titre)}</a><small>${showCat?esc(catName(d.categorie))+' · ':''}${dateTxt(d)}</small></div>
     <div class="act">
-      ${canShareFiles?`<button class="iconbtn" data-share="${esc(d.id)}" aria-label="Partager ${esc(d.titre)}" title="Partager">${ICON.share}</button>`:''}
+      <button class="iconbtn" data-send="${esc(d.id)}" aria-label="Envoyer ${esc(d.titre)} par mail" title="Envoyer par mail">${ICON.mail}</button>
       <a class="iconbtn" href="${esc(href)}" target="_blank" rel="noopener" data-open="${esc(d.id)}" aria-label="Ouvrir ${esc(d.titre)}" title="Ouvrir">${ICON.open}</a>
     </div></div>`;
 }
@@ -414,15 +423,51 @@ $('#p-docs').addEventListener('click',async e=>{
   const g=e.target.closest('[data-goto]'); if(g){ e.preventDefault(); setTab(g.dataset.goto); window.scrollTo({top:0}); return; }
   const o=e.target.closest('[data-open]');
   if(o && Date.now()-signedAt>(SIGN_TTL-120)*1000){ e.preventDefault(); toast('Lien expiré, mise à jour…'); await loadAll(true); return; }
-  const s=e.target.closest('[data-share]'); if(!s) return;
-  const d=docs.find(x=>x.id===s.dataset.share); if(!d) return;
-  try{
-    s.disabled=true;
-    const blob=await q(sb.storage.from(BUCKET).download(d.chemin));
-    await navigator.share({files:[new File([blob],d.nom_fichier,{type:blob.type||d.type||'application/pdf'})],title:d.titre});
-  }catch(err){ if(err&&err.name!=='AbortError') toast('Partage impossible. Ouvrez le document puis partagez-le.'); }
-  finally{ s.disabled=false; }
+  const s=e.target.closest('[data-send]'); if(!s) return;
+  const d=docs.find(x=>x.id===s.dataset.send); if(d) sendDoc(d);
 });
+
+/* Envoyer un document vierge par mail (pour l'imprimer au bureau, par exemple).
+   Le fichier est préparé dès l'ouverture de la fenêtre : le bouton Partager peut
+   alors ouvrir Outlook directement (le téléphone l'exige dans le même geste). */
+function sendDoc(d){
+  let file=null, to=envoi[0]||'';
+  const href=signed.get(d.chemin)||'#';
+  const subj=`Docubus – ${d.titre}`;
+  openModal(`<h3 id="modal-title">Envoyer « ${esc(d.titre)} »</h3>
+    <div class="field"><span>À</span>
+      <div class="dest-chips" id="sd-to">${envoi.map((a,i)=>`<button type="button" class="chip" data-to="${esc(a)}" aria-pressed="${i===0}">${esc(a)}</button>`).join('')}</div>
+      <input class="in" id="sd-other" type="email" placeholder="ou une autre adresse" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+    <div class="step">
+      ${canShareFiles
+        ?`<p>L'adresse est copiée en même temps : choisissez <b>Outlook</b>, puis dans <b>À</b> : appui long → <b>Coller</b>.</p>
+          <button class="primary orange" id="sd-share" disabled>${ICON.share}<span>Préparation du fichier…</span></button>`
+        :`<p>Ce navigateur ne peut pas joindre le fichier : le mail contiendra un lien valable 1 heure.</p>
+          <a class="primary orange" id="sd-mailto" href="#">${ICON.mail}Ouvrir le mail</a>`}
+    </div>
+    <div class="row"><a class="secondary" href="${esc(href)}" target="_blank" rel="noopener">${ICON.open}Ouvrir le document</a></div>
+    <button class="ghost" data-close>Fermer</button>`,'send');
+  const box=$('#modal-box');
+  const current=()=>{ const o=box.querySelector('#sd-other').value.trim(); return o||to; };
+  box.querySelector('#sd-to').onclick=e=>{ const b=e.target.closest('[data-to]'); if(!b) return; to=b.dataset.to; box.querySelector('#sd-other').value='';
+    box.querySelectorAll('#sd-to .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); };
+  const mt=box.querySelector('#sd-mailto');
+  if(mt) mt.onclick=e=>{ const a=current(); if(!MAIL.test(a)){ e.preventDefault(); toast('Adresse incorrecte.'); return; }
+    mt.href=`mailto:${encodeURIComponent(a)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent('Document : '+d.titre+'\n'+(signed.get(d.chemin)||''))}`; };
+  const sh=box.querySelector('#sd-share');
+  if(sh){
+    q(sb.storage.from(BUCKET).download(d.chemin)).then(blob=>{
+      file=new File([blob],d.nom_fichier,{type:blob.type||d.type||'application/octet-stream'});
+      sh.disabled=false; sh.querySelector('span').textContent='Partager vers Outlook';
+    }).catch(()=>{ sh.querySelector('span').textContent='Fichier indisponible'; });
+    sh.onclick=async()=>{
+      const a=current(); if(!MAIL.test(a)){ toast('Adresse incorrecte.'); return; }
+      copyText(a);
+      try{ await navigator.share({files:[file],title:subj}); toast('Adresse copiée : collez-la dans « À »'); }
+      catch(err){ if(err&&err.name!=='AbortError') toast('Partage impossible : '+(err.message||err.name)); }
+    };
+  }
+}
 
 /* ======================================================================
    2. DÉLIVRANCE EXCEPTIONNELLE (rien ne sort du téléphone sauf par Outlook)
@@ -797,7 +842,7 @@ function renderAdmin(){
     <div class="subtabs" role="group">
       <button data-sub="docs" aria-pressed="${asub==='docs'}">Documents</button>
       <button data-sub="dests" aria-pressed="${asub==='dests'}">Destinataires</button>
-      <button data-sub="textes" aria-pressed="${asub==='textes'}">Textes des attestations</button>
+      <button data-sub="textes" aria-pressed="${asub==='textes'}">Réglages</button>
     </div>
     <div id="asub"></div>
     <p class="hint">Qui peut se connecter, et qui est administrateur : cela se gère dans l'annuaire <b>Annubus</b>, bouton « Accès ».</p>`;
@@ -824,7 +869,7 @@ function adminDocs(){
         <button class="mini red" data-cact="del" aria-label="Supprimer la catégorie">${ICON.trash}</button></div>
       ${ds.map(d=>`<div class="arow" data-doc="${esc(d.id)}">
         <div class="t"><a href="${esc(signed.get(d.chemin)||'#')}" target="_blank" rel="noopener">${esc(d.titre)}</a>
-          <small>${esc(d.nom_fichier)} · ${sizeTxt(d.taille)} · ${frDate(d.maj)}${d.maj_par?' par '+esc(d.maj_par):''}</small></div>
+          <small>${esc(d.nom_fichier)} · ${sizeTxt(d.taille)} · ${dateTxt(d)}${d.maj_par?' · par '+esc(d.maj_par):''}</small></div>
         <div class="acts"><button class="mini" data-dact="version">${ICON.up}Nouvelle version</button>
           <button class="mini" data-dact="rename">Renommer</button>
           <select class="mini" data-dact="move" aria-label="Déplacer vers">${cats.map(x=>`<option value="${esc(x.id)}" ${x.id===c.id?'selected':''}>${x.id===c.id?'Déplacer…':esc(x.nom)}</option>`).join('')}</select>
@@ -990,13 +1035,26 @@ function saveDest(l){
 function adminTextes(){
   const s=structure;
   $('#asub').innerHTML=`<div class="card top">
+    <h3>Textes des attestations</h3>
     <div class="grid2"><label class="field"><span>Signataire</span><input class="in" data-sk="signataire" value="${esc(s.signataire)}"></label>
       <label class="field"><span>Ville</span><input class="in" data-sk="ville" value="${esc(s.ville)}"></label></div>
     <label class="field"><span>Nom court (objet du mail)</span><input class="in" data-sk="nom" value="${esc(s.nom)}"></label>
     <label class="field"><span>En-tête sous le logo <small>(une ligne par ligne)</small></span><textarea class="in" data-sk="entete" rows="3">${esc((s.entete||[]).join('\n'))}</textarea></label>
     <label class="field"><span>Pied de page <small>(une ligne par ligne)</small></span><textarea class="in" data-sk="pied" rows="4">${esc((s.pied||[]).join('\n'))}</textarea></label>
     <div class="row end"><button class="primary orange" id="saves">Enregistrer les textes</button></div>
+  </div>
+  <div class="card top" style="margin-top:16px">
+    <h3>Envoi des documents vierges</h3>
+    <label class="field"><span>Adresses proposées <small>(une par ligne · la première est choisie par défaut)</small></span>
+      <textarea class="in" id="envoi" rows="3" spellcheck="false" autocapitalize="off">${esc(envoi.join('\n'))}</textarea></label>
+    <div class="row end"><button class="primary orange" id="savee">Enregistrer les adresses</button></div>
   </div>`;
+  $('#savee').onclick=()=>{
+    const list=$('#envoi').value.split(/[\s,;]+/).map(x=>x.trim().toLowerCase()).filter(Boolean);
+    const bad=list.filter(a=>!MAIL.test(a));
+    if(!list.length||bad.length){ toast(bad.length?'Adresse incorrecte : '+bad[0]:'Indiquez au moins une adresse.'); return; }
+    act(async()=>q(sb.from('docubus_reglages').upsert({cle:'envoi',valeur:{adresses:list}})),'Adresses enregistrées');
+  };
   $('#saves').onclick=()=>{
     const v=k=>$(`[data-sk="${k}"]`).value, lines=k=>v(k).split('\n').map(x=>x.trim()).filter(Boolean);
     const val={nom:v('nom').trim(),signataire:v('signataire').trim(),ville:v('ville').trim(),entete:lines('entete'),pied:lines('pied')};

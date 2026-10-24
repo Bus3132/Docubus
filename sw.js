@@ -2,7 +2,7 @@
 // Toujours la version en ligne d'abord ; la copie en cache sert seulement hors connexion.
 // Seule la « coquille » de l'appli est gardée ; les documents et les listes restent dans la base.
 // Rien de ce qui est saisi dans le formulaire de délivrance ne passe par ici.
-const CACHE = 'docubus-v4';
+const CACHE = 'docubus-v5';
 const FILES = [
   './',
   './index.html',
