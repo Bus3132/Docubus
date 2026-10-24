@@ -2,9 +2,9 @@
 
 Les documents du Bus 31/32, à Marseille : documents vierges rangés par catégories, et attestation de délivrance exceptionnelle de TSO envoyée au CSAPA de suivi.
 
-**Adresse : https://bus3132.github.io/docubus/**
+**Adresse : https://bus3132.github.io/Docubus/**
 
-![DocuBus](img/logo.svg)
+![Docubus](img/logo-docubus.png)
 
 **Aucun document ni aucune adresse n'est stocké dans ce dépôt public.** Tout est dans la base Supabase de l'annuaire Annubus, et seuls les membres de l'annuaire y ont accès. Aucune donnée patient n'est stockée nulle part.
 
@@ -36,8 +36,8 @@ Qui peut se connecter, et qui est administrateur : cela se gère dans **Annubus*
 
 1. *SQL Editor* > *New query* : coller `supabase-docubus.sql`, puis *Run*.
    Ce script crée les tables `docubus_*` et l'espace de stockage privé `docubus`, avec les règles d'accès. Il réutilise la table `membres` d'Annubus.
-2. *Authentication* > *URL Configuration* > *Redirect URLs* : ajouter `https://bus3132.github.io/docubus/`. Ne pas toucher au *Site URL* d'Annubus.
-3. GitHub, dépôt `docubus` > *Settings* > *Pages* : *Deploy from a branch*, branche `main`, dossier `/ (root)`.
+2. *Authentication* > *URL Configuration* > *Redirect URLs* : ajouter `https://bus3132.github.io/Docubus/`. Ne pas toucher au *Site URL* d'Annubus.
+3. GitHub, dépôt `Docubus` > *Settings* > *Pages* : *Deploy from a branch*, branche `main`, dossier `/ (root)`.
 
 La mise en veille de la base gratuite est déjà évitée par la tâche quotidienne d'Annubus, puisque c'est la même base.
 
